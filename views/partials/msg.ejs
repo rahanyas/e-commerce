@@ -1,0 +1,28 @@
+
+  <!-- jQuery -->
+  <script src="/libs/jquery/jquery.min.js"></script>
+  <!-- Toastr JS -->
+  <script src="/libs/toastr/toastr.min.js"></script>
+
+<script>
+  toastr.options = {
+    "positionClass" : "toast-top-center",
+    "closeButton" : true,
+    "progressBar" : true,
+    "showMethod" : "slideDown",
+    "preventDuplicates" : true
+  }
+</script>
+
+
+<% if (error) { %>
+  <script>
+    toastr.error('<%= error %>'); 
+  </script>
+<% } %>
+<% if (success) { %>
+<script>
+  toastr.success("<%= success %>"); 
+</script>
+<% } %>
+

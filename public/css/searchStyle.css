@@ -1,0 +1,75 @@
+
+
+/* Desktop-specific styling */
+#nav-search-desktop {
+  width: 200px;
+  padding: 8px 12px;
+  font-size: 16px;
+  color: #333;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+#searchIcon-nav-desktop {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Mobile-specific styling */
+#nav-search-mobile {
+  width: 160px;
+  padding: 8px 12px;
+  font-size: 16px;
+  color: #333;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+#searchIcon-nav-mobile {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+
+
+/* Focus effect to highlight the input when typing */
+#nav-search-mobile:focus, 
+#nav-search-desktop:focus {
+  width: 250px; /* Slightly expand when focused */
+  background-color: #fff;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Icon styles */
+#searchIcon-nav-desktop, #searchIcon-nav-mobile {
+  color: #007bff;
+  margin-left: 5px;
+  transition: color 0.3s ease;
+}
+
+#searchIcon-nav-desktop:hover, #searchIcon-nav-mobile:hover {
+  color: #0056b3;
+}
+
+
+.related-products-title {
+  font-size: 1.75rem; /* Larger font size for emphasis */
+  font-weight: 600; /* Semi-bold for better visibility */
+  color: #333; /* Darker color for better contrast */
+  text-align: center; /* Align the title to the left */
+  margin-top: 30px; /* Add space above the title */
+  margin-bottom: 15px; /* Add space below the title */
+  text-transform: capitalize; /* Ensure title is properly capitalized */
+  letter-spacing: 1px; /* Subtle letter spacing for a clean look */
+  font-family: 'Roboto', sans-serif; /* Use a modern font for better readability */
+}
+
+.related-products-title:hover {
+  color: #2c2b2bac; /* Add a hover effect with a subtle color change */
+  cursor: pointer; /* Indicate interactivity on hover */
+}

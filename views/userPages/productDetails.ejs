@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="animsition">
+  
+	<nav class="navbar navbar-expand-lg navbar-light bg-light ">
+		<div class="container-fluid">
+		
+			<a class="navbar-brand" href="/">coza store</a>
+	
+	
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+	
+		
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav ms-auto">
+					<li class="nav-item">
+						<a class="nav-link active" aria-current="page" href="/">Home</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/product">Shop</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/shoping-cart">Cart</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/profile">My Profile</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/contact">Contact</a>
+					</li>
+					<% if (!user) { %>
+						<li class="nav-item">
+							<a class="nav-link" href="/login">Sign-In</a>
+						</li>
+					<% } %>
+
+				</ul>
+			</div>
+		</div>
+	</nav>
+	
+	<!-- <form action="/addtoCart/<%= product._id %>" method="post">	 -->
+
+	<div class="container mt-5">
+		<div class="row">
+			<div class="col-md-6">
+				<div class="text-center border p-3 product-image-container">
+					<img src="<%= product.images[0]?.url %>" alt="product image" class="img-fluid w-75">
+				</div>
+			</div>
+	
+			
+			<div class="col-md-4">
+				<div class="border rounded p-4 shadow-sm" style="background-color: #f8f9fa;">
+					<!-- Product Name -->
+					<h3 class="fw-bold text-primary mb-3"><%= product.name %></h3>
+					
+					<!-- Brand -->
+					<p class="text-muted mb-1">Brand: <strong><%= product.brand %></strong></p>
+					
+					<!-- Available Colors -->
+					<h5 class="text-secondary text-capitalize mb-3">Available Colors</h5>
+
+    <div class="mb-3">
+      <% product.color.forEach(color => { %>
+        <button type="button" class="btn btn-outline-primary color-btn me-2 mb-2" data-color="<%= color %>">
+          <%= color %>
+        </button>
+      <% }) %>
+    </div>
+					
+					<!-- Description -->
+					<p class="text-dark text-capitalize mb-4" style="font-size: 0.95rem;">
+						<%= product.description %>
+					</p>
+					
+					<!-- Price -->
+					<h4 class="text-danger fw-bold">$<%= product.price %></h4>
+				</div>
+			</div>
+			
+	
+			
+			<div class="col-md-2">
+				<div class="border p-3">
+					<h4 class="fw-bold">$<%= product.price %></h4>
+					<p class="text-success">Free delivery <strong>Friday, 22 Sept</strong></p>
+					<p class="text-danger">Only <%= product.stock %> left in stock!</p>
+
+						<button type="submit" class="btn btn-warning w-100 mt-2" id="addToCartBtn">Add to Cart</button>
+				<!-- </form>
+							 -->
+					<a href="/order/<%= product._id %>" class="btn btn-success w-100 mt-2">Buy Now</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    let selectedColor = null;
+
+    $(".color-btn").on("click", function() {
+      $(".color-btn").removeClass("active btn-primary").addClass("btn-outline-primary");
+      $(this).removeClass("btn-outline-primary").addClass("active btn-primary");
+
+      selectedColor = $(this).data("color");
+    });
+
+    $("#addToCartBtn").on("click", function() {
+      if (!selectedColor) {
+        alert("Please select a color first.");
+        return;
+      }
+
+      $.ajax({
+        url: '/addtoCart/<%= product._id %>',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ color: selectedColor }),
+        success: function(response) {
+          alert(response.msg);
+        },
+        error: function(error) {
+          console.error("Error adding product to cart:", error);
+        }
+      });
+    });
+  });
+</script>
+
+
+ 
+</body>
+</html>

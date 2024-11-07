@@ -1,0 +1,174 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>payment page</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+    rel="stylesheet">
+</head>
+<body>
+
+<!-- Custom CSS -->
+<style>
+  .address {
+    width: 100%;
+    padding: 15px;
+    background-color: #f8f9fa;
+    color: #333;
+    border-radius: 8px;
+    overflow: auto;
+    text-align: left;
+    margin-bottom: 20px;
+  }
+
+  .accordion-button {
+    font-weight: 600;
+    font-size: 1.2rem;
+    background-color: #007bff;
+    color: #fff;
+  }
+
+
+
+  .address p {
+    word-wrap: break-word;
+  }
+
+  .btn-custom {
+    background-color: #ffc107;
+    color: #000;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-custom:hover {
+    background-color: #e0a800;
+  }
+
+  .product-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  .order-summary h4 {
+    font-size: 1.25rem;
+    margin-bottom: 15px;
+  }
+
+  .payment-methods .form-check-label {
+    font-size: 1.1rem;
+  }
+
+  .payment-methods .form-check-input {
+    margin-right: 10px;
+  }
+
+  .payment-methods {
+    margin-bottom: 20px;
+  }
+</style>
+
+<h1 class="text-center mt-4">Checkout</h1>
+
+<div class="accordion mt-5 container" id="accordionPanelsStayOpenExample">
+  <!-- Select Address Section -->
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+        Select Address
+      </button>
+    </h2>
+    <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+      <div class="accordion-body">
+        <div class="row justify-content-center align-items-center mt-3 g-4">
+          <div class="col-md-4 text-center">
+            <h4>Delivery Address</h4>
+          </div>
+          <div class="col-md-4 text-center">
+            <div class="address">
+              <% if (user) { %>
+                <p><%= user.address %></p>
+              <% } else { %>
+                <p>No address found. Please update your address.</p>
+              <% } %>
+            </div>
+          </div>
+          <div class="col-md-4 text-center">
+            <button type="button" class="btn btn-custom">Change Address</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Select Payment Section -->
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
+        Select Payment
+      </button>
+    </h2>
+    <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
+      <div class="accordion-body payment-methods">
+        <div class="row">
+          <div class="col-12">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay">
+              <label class="form-check-label" for="razorpay">Stripe</label>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-12">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod">
+              <label class="form-check-label" for="cod">Cash on Delivery</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Details Section -->
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
+        Order Details
+      </button>
+    </h2>
+    <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
+      <div class="accordion-body">
+        <% if (cart) { %>
+          <% cart.forEach(item => { %>
+            <div class="row my-4 text-upperCase">
+              <div class="col-md-4 text-center">
+                <img src="<%= item.products.images[0]?.url %>" alt="<%= item.products.name %>" class="product-img"/>
+              </div>
+              <div class="col-md-8">
+                <h4><%= item.products.name %></h4>
+                <p><strong>Price:</strong> $<%= item.price %></p>
+                <p><strong>Description:</strong> <%= item.products.description %></p>
+                <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                <p><strong>Subtotal:</strong> $<%= item.subTotal %></p>
+              </div>
+            </div>
+            <hr>
+          <% }) %>
+        <% } %>
+        <div class="order-summary">
+          <h4><strong>Total Price:</strong> $<%= totalPrice %></h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 15px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.table thead {
+  background-color: #f8f9fa;
+  border-bottom: 3px solid #dee2e6;
+}
+
+.table thead th {
+  padding: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: left;
+}
+
+.table tbody tr {
+  background-color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+}
+
+.table tbody tr:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.table tbody td {
+  padding: 16px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  color: #495057;
+  border-bottom: 1px solid #f1f3f5;
+  text-align: left;
+}
+
+.table tbody td img {
+  border-radius: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.table tbody td img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  text-transform: uppercase;
+}
+
+.btn-danger {
+  background-color: #ff6b6b;
+  border: none;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #fa5252;
+  box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
+}
+
+.btn-success {
+  background-color: #51cf66;
+  border: none;
+  color: #fff;
+}
+
+.btn-success:hover {
+  background-color: #40c057;
+  box-shadow: 0 4px 10px rgba(81, 207, 102, 0.4);
+}
+
+/* Smooth scroll for table actions */
+.btn + .btn {
+  margin-left: 10px;
+}
+
+.pagination-controls {
+padding: 10px;
+}
+
+.pagination-controls a {
+padding: 10px 20px;
+border-radius: 5px;
+text-align: center;
+font-size: 16px;
+}
+
+.pagination-controls a.btn {
+min-width: 50px;
+}
