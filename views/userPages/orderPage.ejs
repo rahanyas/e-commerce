@@ -48,7 +48,7 @@
   }
 
   .product-img {
-    max-width: 100%;
+    max-width: 50%;
     height: auto;
     border-radius: 8px;
   }
@@ -116,8 +116,10 @@
         <div class="row">
           <div class="col-12">
             <div class="form-check">
-              <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="stripe" value="stripe">
               <label class="form-check-label" for="razorpay">Stripe</label>
+              <br>
+              <button type="button" id="strip-proceed-btn" class="btn btn-success mt-2">proceed</button>
             </div>
           </div>
         </div>
@@ -168,7 +170,17 @@
 </div>
 
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+
+   <script>
+$('#strip-proceed-btn').hide();
+
+$('#stripe, #cod').click((e) => {
+    e.preventDefault();
+    $('#strip-proceed-btn').toggle(e.target.id === 'stripe');
+});
+
+   </script>
 </body>
 </html>
