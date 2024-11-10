@@ -39,14 +39,20 @@ const orderSchema = new mongoose.Schema({
     type : Date,
     default : Date.now
   },
-  status : {
-    type : String,
-    enum : ['Pending', 'Shipped', 'Delivered', 'Cancelled'],
-    default : 'Pending'
-  },
   paymentMethod : {
-    type : String,
-    required : true
+     method : {
+      type : String,
+      enum : ['stripe', 'cod'],
+      required : true
+     },
+     status : {
+      type : String,
+      enum : ['Pending', 'Shipped', 'Delivered', 'Cancelled'],
+      default : 'Pending'
+    },
+    transactionId : {
+      type : String
+    }
   }
 });
 

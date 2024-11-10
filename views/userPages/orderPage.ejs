@@ -163,6 +163,7 @@
         <% } %>
         <div class="order-summary">
           <h4><strong>Total Price:</strong> $<%= totalPrice %></h4>
+          <button type="button" class="btn btn-success" id="purchase-btn">procedd</button>
         </div>
       </div>
     </div>
@@ -174,12 +175,27 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
 
    <script>
-$('#strip-proceed-btn').hide();
 
-$('#stripe, #cod').click((e) => {
-    e.preventDefault();
-    $('#strip-proceed-btn').toggle(e.target.id === 'stripe');
+$(document).ready(function() {
+    // Initially hide both buttons
+    $('#strip-proceed-btn').hide();
+    $('#purchase-btn').hide();
+
+    // Show the appropriate button when either payment method is selected
+    $('#stripe, #cod').click(function() {
+        // Hide both buttons first
+        $('#strip-proceed-btn').hide();
+        $('#purchase-btn').hide();
+
+        // Show the appropriate button based on the selected payment method
+        if ($('#stripe').is(':checked')) {
+            $('#strip-proceed-btn').show();  // Show Stripe button
+        } else if ($('#cod').is(':checked')) {
+            $('#purchase-btn').show();  // Show COD button
+        }
+    });
 });
+
 
    </script>
 </body>
