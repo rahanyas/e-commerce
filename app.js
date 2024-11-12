@@ -5,7 +5,7 @@ import session from 'express-session';
 import cloudinary from 'cloudinary';  
 import morgan from 'morgan';
 import cors from 'cors'
-
+import Stripe from 'stripe'
 
 const app = express();
 
@@ -13,6 +13,8 @@ dotenv.config();
 connectDB();
 
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+export {stripe};
 
 cloudinary.v2.config({
   cloud_name : process.env.CLOUDINARY_NAME,
@@ -39,6 +41,7 @@ app.use(session({
 import router from './router/userRoutes.js'; 
 import adminrouter from './router/adminRoutes.js';
 import productRouter from './router/productRoutes.js'
+
 
 app.use('/', router);
 app.use('/', adminrouter);

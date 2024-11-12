@@ -48,7 +48,7 @@
   }
 
   .product-img {
-    max-width: 50%;
+    max-width: 25%;
     height: auto;
     border-radius: 8px;
   }
@@ -119,7 +119,7 @@
               <input class="form-check-input" type="radio" name="paymentMethod" id="stripe" value="stripe">
               <label class="form-check-label" for="razorpay">Stripe</label>
               <br>
-              <button type="button" id="strip-proceed-btn" class="btn btn-success mt-2">proceed</button>
+              <button  id="stripe-proceed-btn" class="btn btn-success mt-2" type="button">proceed</button>
             </div>
           </div>
         </div>
@@ -162,8 +162,10 @@
           <% }) %>
         <% } %>
         <div class="order-summary">
-          <h4><strong>Total Price:</strong> $<%= totalPrice %></h4>
-          <button type="button" class="btn btn-success" id="purchase-btn">procedd</button>
+          <div class="d-flex">
+          <h4 class="align-items-center"><strong>Total Price:</strong> $<%= totalPrice %></h4>
+            <button type="button" class="btn btn-success ms-auto" id="purchase-btn">proceed</button>
+          </div>
         </div>
       </div>
     </div>
@@ -173,30 +175,63 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
-
+  <script src="https://js.stripe.com/v3/"></script>
    <script>
 
 $(document).ready(function() {
+    console.log('jQuery is working');
     // Initially hide both buttons
-    $('#strip-proceed-btn').hide();
+    $('#stripe-proceed-btn').hide();
     $('#purchase-btn').hide();
 
     // Show the appropriate button when either payment method is selected
     $('#stripe, #cod').click(function() {
-        // Hide both buttons first
-        $('#strip-proceed-btn').hide();
+        console.log('Payment method selected'); // Log to confirm this is firing
+        $('#stripe-proceed-btn').hide();
         $('#purchase-btn').hide();
 
-        // Show the appropriate button based on the selected payment method
         if ($('#stripe').is(':checked')) {
-            $('#strip-proceed-btn').show();  // Show Stripe button
+            $('#stripe-proceed-btn').show();  // Show Stripe button
         } else if ($('#cod').is(':checked')) {
             $('#purchase-btn').show();  // Show COD button
         }
     });
+
+    const stripe = Stripe("<%= stripeKey %>");
+
+   $(document).ready(function() {
+  $('#stripe-proceed-btn').click(function() {
+    console.log("Button clicked");
+    
+    // Assuming you're using fetch or Axios to send the request to create a session:
+fetch('/create-checkout-session', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ /* any required data here */ }),
+})
+  .then((response) => response.json())
+  .then((session) => {
+    // Redirect to Stripe checkout
+    return stripe.redirectToCheckout({ sessionId: session.id });
+  })
+  .then((result) => {
+    if (result.error) {
+      // Display error to your customer (e.g., insufficient funds)
+      alert(result.error.message);
+    }
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+
+  });
 });
+});
+  </script>
 
 
-   </script>
+
 </body>
 </html>

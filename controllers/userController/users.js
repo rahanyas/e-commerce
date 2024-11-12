@@ -3,7 +3,8 @@ import bcrypt from "bcryptjs/dist/bcrypt.js";
 import Products from '../../models/productSchema.js'
 import Cart from "../../models/cartSchema.js";
 import wishListModel from "../../models/wishListSchema.js";
-
+import orderModel from "../../models/orderSchema.js";
+import { stripe } from "../../app.js";
 
 const homePage = async (req, res) => {
   const products = await Products.find({}).populate('category');
@@ -665,9 +666,10 @@ const orderPage = async (req, res) => {
     return res.render('userPages/orderPage', {
       user,
       cart : cart.items,
-      totalPrice
+      totalPrice,
+      stripeKey : process.env.STRIPE_PUBLISHABLE_KEY
     })
-     
+     console.log( process.env.STRIPE_PUBLISHABLE_KEY)
   } catch (error) {
     console.log(error);
     return res.status(500).send({
@@ -676,6 +678,44 @@ const orderPage = async (req, res) => {
   }
 }
 
+const stripePay = async (req, res) => {
+      try {
+        console.log('Create Checkout Session Request Received');
+        const user = req.session.user;
+        !user ? console.log('pls login'):console.log(user);
+        const cart = await Cart.findOne({user : user._id}).populate('items.products').exec();
+         console.log(cart)
+        const lineItems = cart.items.map(item => ({
+          price_data : {
+            currency : 'usd',
+            product_data : {
+              name : item.products.name,
+            },
+            unit_amount : item.products.price * 100,
+          },
+          quantity : item.quantity,
+        }));
+     
+        console.log(lineItems)
+
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types : ['card'],
+          line_items : lineItems,
+          mode : 'payment',
+          success_url : `${process.env.DOMAIN}/success`,
+          cancel_url : `${process.env.DOMAIN}/cancel`
+        });
+
+        res.json({
+          id : session.id
+        });
+      } catch (error) {
+         console.log(error);
+         return res.json({
+          msg : 'an error occured in stripe pay auth'
+         })
+      }
+}
 
 
 
@@ -734,6 +774,7 @@ export {
   productDetailsPage,
   addAddress,
   orderPage,
+  stripePay,
   quantityChange,
   productSearch
 }

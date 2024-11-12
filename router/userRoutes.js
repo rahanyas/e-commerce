@@ -18,6 +18,7 @@ import { loginAuth,
          wishListPage,
          removeWishListproduct,
          orderPage,
+         stripePay,
          quantityChange,
          productSearch,
   } from "../controllers/userController/users.js";
@@ -47,6 +48,6 @@ router.get('/profile', myProfile);
 router.post('/addAddress/:id', addAddress);
 
 router.get('/payment', orderPage)
-
+router.post('/create-checkout-session', stripePay)
 
 export default router;
