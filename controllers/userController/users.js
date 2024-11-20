@@ -130,20 +130,37 @@ const loginAuth = async (req, res) => {
 
 const myProfile = (req, res) => {
    try {
-      return  res.render('userPages/myProfile', {
+      return  res.render('userPages/myAccount', {
           user : req.session.user || null,
           error : null,
           success : null
         })
    } catch (error) {
     console.error(error);
-    return res.render('userPages/myProfile', {
+    return res.render('userPages/myAccount', {
       user : null,
       error : 'an error occured',
       success : null
     });
    }
 };
+
+const userInfoPage = (req, res) => {
+  try {
+    return  res.render('userPages/userDetailsPage', {
+        user : req.session.user || null,
+        error : null,
+        success : null
+      })
+ } catch (error) {
+  console.error(error);
+  return res.render('userPages/userDetailsPage', {
+    user : null,
+    error : 'an error occured',
+    success : null
+  });
+ }
+}
 
 const addAddress = async (req, res) => {     
      try {
@@ -152,7 +169,7 @@ const addAddress = async (req, res) => {
       const userId = req.params.id;
       const user = await User.findById(userId);
       if(!user) {
-        res.render('userPages/myProfile', {
+        res.render('userPages/userDetailsPage', {
           user : null,
           error : 'user is not found',
           success : null
@@ -178,9 +195,9 @@ const addAddress = async (req, res) => {
        }
       //  const products = await Products.find({}).populate('category');
        if(updateAdd){
-         res.render('userPages/myProfile', {
+         res.render('userPages/userDetailsPage', {
           user : req.session.user || null,
-          success : 'added address successfuly',
+          success : ' details added  successfuly',
           error : null
         })
 
@@ -198,7 +215,7 @@ const addAddress = async (req, res) => {
         // console.log(user);
         // console.log('updated')
       }else{
-        return res.render('userPages/myProfile', {
+        return res.render('userPages/userDetailsPage', {
           user : req.session.user || null,
           error : 'updation failed',
           success : null,
@@ -206,7 +223,7 @@ const addAddress = async (req, res) => {
       }
    }catch (error) {
       console.error(error);
-      res.render('userPages/myProfile', {
+      res.render('userPages/userDetailsPage', {
         user : req.session.user,
         error : 'an error occured while updating address',
         success : null
@@ -669,7 +686,7 @@ const orderPage = async (req, res) => {
       totalPrice,
       stripeKey : process.env.STRIPE_PUBLISHABLE_KEY
     })
-     console.log( process.env.STRIPE_PUBLISHABLE_KEY)
+    //  console.log( process.env.STRIPE_PUBLISHABLE_KEY)
   } catch (error) {
     console.log(error);
     return res.status(500).send({
@@ -754,8 +771,18 @@ const stripePay = async (req, res) => {
       }
 }
 
+const orderSuccess = async (req, res) => {
+  const products = await Products.find({}).populate('category');
+  res.render('userPages/index', {
+    success : 'your oreder is placed',
+    error : null,
+    products
+  })
+}
 
+const orderCancel = async (req, res) => {
 
+}
 
 
 const contactPage = (req, res) => {
@@ -800,6 +827,7 @@ export {
   loginAuth,
   contactPage,
   myProfile,
+  userInfoPage,
   logout,
   addToCartAuth,
   CartPage,
@@ -812,6 +840,7 @@ export {
   addAddress,
   orderPage,
   stripePay,
+  orderSuccess,
   quantityChange,
   productSearch
 }

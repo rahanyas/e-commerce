@@ -21,6 +21,8 @@ import { loginAuth,
          stripePay,
          quantityChange,
          productSearch,
+         orderSuccess,
+         userInfoPage,
   } from "../controllers/userController/users.js";
 // import verifyUser from "../middlewares/login.js";
 
@@ -45,14 +47,11 @@ router.get('/wishlistPage', wishListPage);
 router.post('/removeItem/:id', removeWishListproduct);
 
 router.get('/profile', myProfile);
+router.get('/userInfo', userInfoPage)
 router.post('/addAddress/:id', addAddress);
 
-router.get('/payment', orderPage)
-router.post('/create-checkout-session', stripePay)
-router.get('/success', (req, res) => {
-  res.render('userPages/index', {
-    success : 'your order is placed',
-    error : null,
-  })
-})
+router.get('/payment', orderPage);
+router.post('/create-checkout-session', stripePay);
+router.get('/success', orderSuccess);
+
 export default router;
