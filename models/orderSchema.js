@@ -51,7 +51,8 @@ const orderSchema = new mongoose.Schema({
       default : 'Pending'
     },
     transactionId : {
-      type : String
+      type : String,
+      required : true
     }
   }
 });

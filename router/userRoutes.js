@@ -49,5 +49,10 @@ router.post('/addAddress/:id', addAddress);
 
 router.get('/payment', orderPage)
 router.post('/create-checkout-session', stripePay)
-
+router.get('/success', (req, res) => {
+  res.render('userPages/index', {
+    success : 'your order is placed',
+    error : null,
+  })
+})
 export default router;

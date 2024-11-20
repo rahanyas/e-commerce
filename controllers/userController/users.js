@@ -682,9 +682,18 @@ const stripePay = async (req, res) => {
       try {
         console.log('Create Checkout Session Request Received');
         const user = req.session.user;
+
         !user ? console.log('pls login'):console.log(user);
+
         const cart = await Cart.findOne({user : user._id}).populate('items.products').exec();
-         console.log(cart)
+         console.log(cart);
+
+        if(!cart || cart.items.length === 0){
+           return res.send({
+            msg : 'your cart is empty'
+           })
+        }
+
         const lineItems = cart.items.map(item => ({
           price_data : {
             currency : 'usd',
@@ -695,8 +704,14 @@ const stripePay = async (req, res) => {
           },
           quantity : item.quantity,
         }));
-     
-        console.log(lineItems)
+        console.log(lineItems);
+        
+        const orderItems = cart.items.map(item => ({
+          products: item.products._id,
+          price: item.products.price,
+          quantity: item.quantity,
+          subtotal: item.products.price * item.quantity, // Calculate subtotal
+        }));
 
         const session = await stripe.checkout.sessions.create({
           payment_method_types : ['card'],
@@ -706,9 +721,31 @@ const stripePay = async (req, res) => {
           cancel_url : `${process.env.DOMAIN}/cancel`
         });
 
-        res.json({
+ 
+
+        const newOrder = new orderModel({
+          user : user._id,
+          address : user.address,
+          items : orderItems,
+          totalPrice : cart.totalPrice,
+          paymentMethod : {
+            method : 'stripe',
+            transactionId : session.id
+          }
+        })
+        await newOrder.save()
+        console.log('new order created ', newOrder);
+
+        cart.items = [];
+        cart.totalPrice = 0;
+        await cart.save();
+        console.log('cart cleared for the user : ', user._id);
+
+        return res.json({
           id : session.id
         });
+
+
       } catch (error) {
          console.log(error);
          return res.json({
