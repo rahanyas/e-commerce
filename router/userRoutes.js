@@ -23,6 +23,7 @@ import { loginAuth,
          productSearch,
          orderSuccess,
          userInfoPage,
+         orderCancel,
   } from "../controllers/userController/users.js";
 // import verifyUser from "../middlewares/login.js";
 
@@ -53,5 +54,6 @@ router.post('/addAddress/:id', addAddress);
 router.get('/payment', orderPage);
 router.post('/create-checkout-session', stripePay);
 router.get('/success', orderSuccess);
+router.get('/cancel', orderCancel);
 
 export default router;

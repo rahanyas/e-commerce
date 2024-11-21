@@ -699,7 +699,6 @@ const stripePay = async (req, res) => {
       try {
         console.log('Create Checkout Session Request Received');
         const user = req.session.user;
-
         !user ? console.log('pls login'):console.log(user);
 
         const cart = await Cart.findOne({user : user._id}).populate('items.products').exec();
@@ -723,40 +722,15 @@ const stripePay = async (req, res) => {
         }));
         console.log(lineItems);
         
-        const orderItems = cart.items.map(item => ({
-          products: item.products._id,
-          price: item.products.price,
-          quantity: item.quantity,
-          subtotal: item.products.price * item.quantity, // Calculate subtotal
-        }));
 
         const session = await stripe.checkout.sessions.create({
-          payment_method_types : ['card'],
-          line_items : lineItems,
-          mode : 'payment',
-          success_url : `${process.env.DOMAIN}/success`,
-          cancel_url : `${process.env.DOMAIN}/cancel`
+          payment_method_types: ['card'],
+          line_items: lineItems,
+          mode: 'payment',
+          success_url: `${process.env.DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${process.env.DOMAIN}/cancel`,
         });
-
- 
-
-        const newOrder = new orderModel({
-          user : user._id,
-          address : user.address,
-          items : orderItems,
-          totalPrice : cart.totalPrice,
-          paymentMethod : {
-            method : 'stripe',
-            transactionId : session.id
-          }
-        })
-        await newOrder.save()
-        console.log('new order created ', newOrder);
-
-        cart.items = [];
-        cart.totalPrice = 0;
-        await cart.save();
-        console.log('cart cleared for the user : ', user._id);
+        
 
         return res.json({
           id : session.id
@@ -771,17 +745,99 @@ const stripePay = async (req, res) => {
       }
 }
 
+
+
+
+
 const orderSuccess = async (req, res) => {
-  const products = await Products.find({}).populate('category');
-  res.render('userPages/index', {
-    success : 'your oreder is placed',
-    error : null,
-    products
-  })
-}
+  try {
+    const user = req.session.user;
+    if (!user) {
+      return res.status(401).send({ msg: 'Please login first.' });
+    }
+
+    const sessionId = req.query.session_id;
+    if (!sessionId) {
+      return res.status(400).send({ msg: 'Invalid session ID.' });
+    }
+
+    // Verify the session with Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.payment_status !== 'paid') {
+      return res.status(400).send({ msg: 'Payment not completed.' });
+    }
+
+    // Fetch cart details
+    const cart = await Cart.findOne({ user: user._id }).populate('items.products').exec();
+    if (!cart || cart.items.length === 0) {
+      return res.send({ msg: 'Your cart is empty.' });
+    }
+
+    // Create order items
+    const orderItems = cart.items.map(item => ({
+      products: item.products._id,
+      price: item.products.price,
+      quantity: item.quantity,
+      subtotal: item.products.price * item.quantity,
+    }));
+
+    // Create a new order
+    const newOrder = new orderModel({
+      user: user._id,
+      address: user.address,
+      items: orderItems,
+      totalPrice: cart.totalPrice,
+      paymentMethod: {
+        method: 'stripe',
+        transactionId: session.id, // Use the Stripe session ID
+      },
+    });
+
+    await newOrder.save();
+
+    // Clear the cart
+    cart.items = [];
+    cart.totalPrice = 0;
+    await cart.save();
+
+    // Fetch products for rendering
+    const products = await Products.find({}).populate('category');
+    res.render('userPages/index', {
+      success: 'Your order is placed.',
+      error: null,
+      products,
+    });
+
+  } catch (error) {
+    console.error('Error processing order:', error);
+    res.status(500).send({ msg: 'Something went wrong. Please try again later.' });
+  }
+};
+
 
 const orderCancel = async (req, res) => {
-
+  try {
+    
+    const user = req.session.user;
+    !user ? console.log('pls login'): console.log(user);
+    
+    const cart = await Cart.findOne({user : user._id}).populate('items.products');
+    !cart ? console.log('user has no cart'):console.log(cart);
+    
+    const totalPrice = cart.totalPrice
+    return res.render('userPages/orderPage', {
+      user,
+      cart : cart.items,
+      totalPrice,
+      stripeKey : process.env.STRIPE_PUBLISHABLE_KEY
+    })
+    //  console.log( process.env.STRIPE_PUBLISHABLE_KEY)
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      msg : 'an error occrured while getting the orderPage'
+    })
+  }
 }
 
 
@@ -841,6 +897,7 @@ export {
   orderPage,
   stripePay,
   orderSuccess,
+  orderCancel,
   quantityChange,
   productSearch
 }
