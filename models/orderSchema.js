@@ -28,7 +28,17 @@ const orderSchema = new mongoose.Schema({
       subtotal : {
         type : Number,
         required : true
-      }
+      },
+      paymentMethod : {
+        method : {
+         type : String,
+         enum : ['stripe', 'cod'],
+         required : true
+        },
+       transactionId : {
+         type : String,
+       }
+     },
     }
   ],
   totalPrice : {
@@ -39,23 +49,12 @@ const orderSchema = new mongoose.Schema({
     type : Date,
     default : Date.now
   },
-  paymentMethod : {
-     method : {
-      type : String,
-      enum : ['stripe', 'cod'],
-      required : true
-     },
-     status : {
-      type : String,
-      enum : ['Pending', 'Shipped', 'Delivered', 'Cancelled'],
-      default : 'Pending'
-    },
-    transactionId : {
-      type : String,
-      required : true
-    }
-  }
-});
+  status : {
+    type : String,
+    enum : ['Pending', 'Shipped', 'Delivered', 'Cancelled'],
+    default : 'Pending'
+  },
+},{timestamps : true });
 
 const orderModel = new mongoose.model('Order', orderSchema);
 

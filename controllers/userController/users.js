@@ -6,6 +6,7 @@ import wishListModel from "../../models/wishListSchema.js";
 import orderModel from "../../models/orderSchema.js";
 import { stripe } from "../../app.js";
 
+
 const homePage = async (req, res) => {
   const products = await Products.find({}).populate('category');
   const user = req.session.user
@@ -746,68 +747,82 @@ const stripePay = async (req, res) => {
 }
 
 
-
-
-
 const orderSuccess = async (req, res) => {
   try {
     const user = req.session.user;
+
     if (!user) {
       return res.status(401).send({ msg: 'Please login first.' });
     }
 
     const sessionId = req.query.session_id;
+
     if (!sessionId) {
       return res.status(400).send({ msg: 'Invalid session ID.' });
     }
 
-    // Verify the session with Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     if (session.payment_status !== 'paid') {
       return res.status(400).send({ msg: 'Payment not completed.' });
     }
 
-    // Fetch cart details
     const cart = await Cart.findOne({ user: user._id }).populate('items.products').exec();
     if (!cart || cart.items.length === 0) {
-      return res.send({ msg: 'Your cart is empty.' });
+      return res.status(400).send({ msg: 'Your cart is empty.' });
     }
 
-    // Create order items
-    const orderItems = cart.items.map(item => ({
+    const stripeOrderItems = cart.items.map(item => ({
       products: item.products._id,
       price: item.products.price,
       quantity: item.quantity,
       subtotal: item.products.price * item.quantity,
+      paymentMethod: {
+        method : 'stripe',
+        transactionId : session.id
+      }, // Assign Stripe for these items
     }));
 
-    // Create a new order
-    const newOrder = new orderModel({
-      user: user._id,
-      address: user.address,
-      items: orderItems,
-      totalPrice: cart.totalPrice,
-      paymentMethod: {
-        method: 'stripe',
-        transactionId: session.id, // Use the Stripe session ID
-      },
-    });
+    let order = await orderModel.findOne({ user: user._id });
 
-    await newOrder.save();
+    if (order) {
+      // Append Stripe items to the existing order
+      order.items = [...order.items, ...stripeOrderItems];
+      order.totalPrice += cart.totalPrice;
+      if (session) {
+        order.paymentMethod = {
+          method: 'stripe',
+          transactionId: session.id,
+        };
+      } else {
+        order.paymentMethod = { method: 'cod' };
+      }
+    } else {
+      // Create a new order
+       order = new orderModel({
+        user: user._id,
+        address: user.address,
+        items: stripeOrderItems, // Or codOrderItems depending on the flow
+        totalPrice: cart.totalPrice,
+        paymentMethod: session
+          ? { method: 'stripe', transactionId: session.id }
+          : { method: 'cod' },
+      });
+    }
 
-    // Clear the cart
+    await order.save();
+
+    // Clear the user's cart
     cart.items = [];
     cart.totalPrice = 0;
     await cart.save();
-
-    // Fetch products for rendering
+     
     const products = await Products.find({}).populate('category');
-    res.render('userPages/index', {
-      success: 'Your order is placed.',
-      error: null,
-      products,
-    });
 
+    res.render('userPages/index', {
+      success: 'Your order has been placed successfully via Stripe.',
+      error: null,
+      products
+    });
   } catch (error) {
     console.error('Error processing order:', error);
     res.status(500).send({ msg: 'Something went wrong. Please try again later.' });
@@ -815,9 +830,10 @@ const orderSuccess = async (req, res) => {
 };
 
 
+
+
 const orderCancel = async (req, res) => {
-  try {
-    
+  try {    
     const user = req.session.user;
     !user ? console.log('pls login'): console.log(user);
     
@@ -839,6 +855,70 @@ const orderCancel = async (req, res) => {
     })
   }
 }
+
+const cod_purchase = async (req, res) => {
+  try {
+    const user = req.session.user;
+    if (!user) {
+      return res.status(401).send({ msg: 'Please log in to continue.' });
+    }
+
+    const cart = await Cart.findOne({ user: user._id }).populate('items.products').exec();
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).send({ msg: 'Your cart is empty. Please add items to proceed.' });
+    }
+
+    const codOrderItems = cart.items.map(item => ({
+      products: item.products._id,
+      price: item.products.price,
+      quantity: item.quantity,
+      subtotal: item.products.price * item.quantity,
+      paymentMethod: {
+        method : 'cod'
+      }, // Assign COD for these items
+    }));
+
+    let order = await orderModel.findOne({ user: user._id });
+
+    if (order) {
+      // Append COD items to the existing order
+      order.items = [...order.items, ...codOrderItems];
+      order.totalPrice += cart.totalPrice;
+      order.paymentMethod = order.paymentMethod || {}; // Initialize if undefined
+      order.paymentMethod.method = 'cod';
+    } else {
+      // Create a new order
+      order = new orderModel({
+        user: user._id,
+        address: user.address,
+        items: codOrderItems,
+        totalPrice: cart.totalPrice,
+        paymentMethod: { method: 'cod' }, // Set payment method at the order level
+      });
+    }
+
+    await order.save();
+
+    // Clear the user's cart
+    cart.items = [];
+    cart.totalPrice = 0;
+    await cart.save();
+
+    const products = await Products.find({}).populate('category');
+    res.render('userPages/index', {
+      success: 'Your order has been placed successfully via Cash on Delivery.',
+      error: null,
+      products
+    });
+  } catch (error) {
+    console.error('Error in COD purchase:', error);
+    res.status(500).send({
+      msg: 'An error occurred while processing your COD order. Please try again later.',
+    });
+  }
+};
+
+
 
 
 const contactPage = (req, res) => {
@@ -898,6 +978,7 @@ export {
   stripePay,
   orderSuccess,
   orderCancel,
+  cod_purchase,
   quantityChange,
   productSearch
 }

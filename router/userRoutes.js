@@ -24,6 +24,7 @@ import { loginAuth,
          orderSuccess,
          userInfoPage,
          orderCancel,
+         cod_purchase,
   } from "../controllers/userController/users.js";
 // import verifyUser from "../middlewares/login.js";
 
@@ -55,5 +56,6 @@ router.get('/payment', orderPage);
 router.post('/create-checkout-session', stripePay);
 router.get('/success', orderSuccess);
 router.get('/cancel', orderCancel);
+router.post('/cod-order',cod_purchase)
 
 export default router;
