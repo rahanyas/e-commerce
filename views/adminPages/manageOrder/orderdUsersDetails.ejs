@@ -1,0 +1,188 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Summary</title>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body {
+background-color: #f7f9fc;
+}
+
+.card {
+border: none;
+border-radius: 10px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+background-color: white;
+}
+
+.card-header {
+background-color: #5a67d8;
+color: white;
+padding: 20px;
+border-top-left-radius: 10px;
+border-top-right-radius: 10px;
+}
+
+.table th {
+background-color: #f1f3f8;
+color: #333;
+font-size: 1rem;
+text-align: center;
+}
+
+.table td {
+vertical-align: middle;
+text-align: center;
+}
+
+.product-img {
+width: 60px;
+height: 60px;
+object-fit: cover;
+border-radius: 8px;
+box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.badge-status {
+font-size: 0.85rem;
+padding: 0.4em 0.8em;
+border-radius: 12px;
+text-transform: capitalize;
+}
+
+.total-summary {
+font-weight: bold;
+background-color: #f8f9fc;
+color: #333;
+font-size: 1.1rem;
+}
+
+.btn-custom {
+background-color: #5a67d8;
+color: white;
+font-weight: bold;
+border-radius: 25px;
+}
+
+.btn-custom:hover {
+background-color: #4349a3;
+}
+</style>
+</head>
+
+<body>
+<% if (user && order) { %>    
+<div class="container py-5">
+<div class="row justify-content-center">
+<div class="col-lg-10">
+<div class="card">
+    <!-- Header -->
+    <div class="card-header text-center">
+        <h2 class="mb-0">Order Summary</h2>
+    </div>
+
+    <!-- Body -->
+
+    <% if (order.items.length > 0) { %>
+      <div class="card-body">
+        <!-- Order Information -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5>Order Information</h5>
+                <p><strong>Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <h5>Shipping Information</h5>
+                <p><strong>Name:</strong> <%= user.fullName %></p>
+                <p><strong>Address:</strong> <%= order.address %></p>
+                <p><strong>Phone:</strong> <%= user.mobile %></p>
+                <p><strong>Email:</strong> <%= user.email %></p>
+            </div>
+        </div>
+
+        <!-- Product Table -->
+        <h5>Products</h5>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Subtotal</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                  
+                    <% order.items.forEach(item => { %>
+                        <tr>
+                            <td>
+                                <% if (item.products.images && item.products.images.length > 0) { %>
+                            <img src="<%= item.products.images[0]?.url %>" alt="<%= item.products.name %>" class="product-img">
+                                <% } else { %>
+                                    <img src="/default-image.jpg" alt="Default Image" class="product-img">
+                                <% } %>
+                            </td>
+                            <td><%= item.products.name %></td>
+                            <td><%= item.quantity %></td>
+                            <td>$<%= item.price.toFixed(2) %></td>
+                            <td>$<%= (item.quantity * item.price).toFixed(2) %></td>
+                            <td><span class="badge bg-warning badge-status"><%= order.status %></span></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Order Summary -->
+        <h5 class="mt-4">Order Summary</h5>
+        <ul class="list-group mb-4">
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Subtotal</span>
+                <span>$<%= order.totalPrice.toFixed(2) %></span>
+            </li>
+            <li class="list-group-item total-summary d-flex justify-content-between">
+                <span>Total</span>
+                <span>$<%= order.totalPrice.toFixed(2) %></span>
+            </li>
+        </ul>
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-center gap-3">
+            <button class="btn btn-custom px-4">Download Invoice</button>
+            <button class="btn btn-outline-primary px-4">Track Order</button>
+            <button class="btn btn-danger px-4">Contact Support</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center p-3">
+        <p>Estimated Delivery Date: <strong>December 1, 2024</strong></p>
+    </div>
+</div>
+</div>
+</div>
+</div>
+<% } %>
+    <% } else { %>
+   <p class="text-center text-bold">user not orderd </p>
+    <% } %>
+    
+
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
+

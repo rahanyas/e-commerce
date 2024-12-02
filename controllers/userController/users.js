@@ -918,7 +918,30 @@ const cod_purchase = async (req, res) => {
   }
 };
 
+const orderDetails = async (req, res) => {
+  try {
+    const user = req.session.user;
+    if (!user) {
+      return res.render('userPages/login-page', {
+        success: null,
+        error: 'Please login to see your cart'
+      });
+    }
 
+    const order = await orderModel.findOne({user : user._id}).populate('items.products');
+
+    !order?console.log('user has not placed any order'):console.log(order);
+
+    res.render('userPages/viewOrder', {
+      order,
+      user
+    });
+  } catch (error) {
+    return res.status(500).send({
+      msg : 'error occured in orderdetails'
+    })
+  }
+}
 
 
 const contactPage = (req, res) => {
@@ -980,5 +1003,6 @@ export {
   orderCancel,
   cod_purchase,
   quantityChange,
-  productSearch
+  productSearch,
+  orderDetails
 }
