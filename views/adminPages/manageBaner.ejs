@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banner Management</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+</head>
+<body>
+  <div class="container my-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3">Manage Banners</h1>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBannerModal">Add New Banner</button>
+    </div>
+
+    <!-- Existing Banners Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Preview</th>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% baners.forEach(item => { %>
+            <tr>
+              <td><img src=<%= item.images[0]?.url %> alt="Banner Preview" class="img-thumbnail" style="width: 100px;"></td>
+              <td><h5><%= item.titleOne %></h5></td>
+              <td><h6><%= item.isActive %></h6></td>
+              <td>
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </td>
+            </tr>
+          <% }) %>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add New Banner Modal -->
+  <div class="modal fade" id="addBannerModal" tabindex="-1" aria-labelledby="addBannerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addBannerModalLabel">Add New Banner</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/admin/baners/addBaner" method="post" enctype="multipart/form-data">
+            <!-- Title One -->
+            <div class="mb-3">
+              <label for="titleOne" class="form-label">Banner Title One</label>
+              <input type="text" class="form-control" id="titleOne" name="titleOne" placeholder="Enter Banner Title One" required>
+            </div>
+            
+            <!-- Title Two -->
+            <div class="mb-3">
+              <label for="titleTwo" class="form-label">Banner Title Two</label>
+              <input type="text" class="form-control" id="titleTwo" name="titleTwo" placeholder="Enter Banner Title Two" required>
+            </div>
+            
+            <!-- Title Three -->
+            <div class="mb-3">
+              <label for="titleThree" class="form-label">Banner Title Three</label>
+              <input type="text" class="form-control" id="titleThree" name="titleThree" placeholder="Enter Banner Title Three" required>
+            </div>
+
+            <!-- Banner Image -->
+            <div class="mb-3">
+              <label for="bannerImage" class="form-label">Banner Image</label>
+              <input class="form-control" type="file" id="bannerImage" name="file" required>
+            </div>
+
+            <!-- Active Switch -->
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="active" name="active" value="true" checked>
+              <label class="form-check-label" for="active">Active</label>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Save Banner</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

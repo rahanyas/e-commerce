@@ -1,5 +1,6 @@
 import express from "express";
 const adminrouter = express.Router();
+import Upload from "../middlewares/multer.js";
 
 import { adminLoginPage, 
          adminLoginAuth, 
@@ -23,6 +24,11 @@ import {
        } 
 from "../controllers/adminController/orderController.js";
 
+import { 
+        addBaner,
+        banerPage 
+} from "../controllers/adminController/banerController.js";
+
 adminrouter.get('/adminLogin', adminLoginPage);
 adminrouter.post('/adminLoginAuth', adminLoginAuth);
 adminrouter.get('/adminHome',adminHomePage)
@@ -36,5 +42,8 @@ adminrouter.post('/addUser', UserPagination, addUserAuth);
 
 adminrouter.get('/admin/orders', orderPage);
 adminrouter.get('/viewOrderDetails/:id', orderDetailsPage);
+
+adminrouter.get('/admin/baners', banerPage)
+adminrouter.post('/admin/baners/addBaner',Upload, addBaner)
 
 export default adminrouter;

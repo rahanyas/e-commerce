@@ -5,16 +5,18 @@ import Cart from "../../models/cartSchema.js";
 import wishListModel from "../../models/wishListSchema.js";
 import orderModel from "../../models/orderSchema.js";
 import { stripe } from "../../app.js";
-
+import banerModel from "../../models/banerSchema.js";
 
 const homePage = async (req, res) => {
   const products = await Products.find({}).populate('category');
+  const banners = await banerModel.find();
   const user = req.session.user
  if(!user){
   return res.render('userPages/index', {
     success : null,
     error : null,
-    products
+    products,
+    banners
   })
  }
      return res.render('userPages/index', {
@@ -41,6 +43,7 @@ const loginPage =  (req, res) => {
 const signup = async (req, res) => {
    const {fullName, email, password, mobile} = req.body;
    try{
+      
        const userExists = await User.findOne({email});
          if(userExists){
           return res.render('userPages/login-page', {
@@ -65,11 +68,13 @@ const signup = async (req, res) => {
             mobile: newUser.mobile
           };
           const products = await Products.find({}).populate('category');
+          const banners = await banerModel.find();
           return res.render('userPages/index', {
             success : `welcome ${newUser.fullName}`,
             error : null,
             user : req.session.user,
-            products 
+            products,
+            banners 
           });
          }
         } catch (error) {
@@ -81,7 +86,7 @@ const signup = async (req, res) => {
   }     
 };
  
-         
+        
     
 const loginAuth = async (req, res) => {
      const {email, password} = req.body;
@@ -108,11 +113,13 @@ const loginAuth = async (req, res) => {
         address : user.address
        }
        const products = await Products.find({}).populate('category');
+       const banners = await banerModel.find();
        return res.render('userPages/index', {
         success : `welcome ${user.fullName}`,
         error : null,
         user : req.session.user,
-        products 
+        products ,
+        banners
       });
      }else{
      
@@ -817,11 +824,12 @@ const orderSuccess = async (req, res) => {
     await cart.save();
      
     const products = await Products.find({}).populate('category');
-
+    const banners = await banerModel.find();
     res.render('userPages/index', {
       success: 'Your order has been placed successfully via Stripe.',
       error: null,
-      products
+      products,
+      banners
     });
   } catch (error) {
     console.error('Error processing order:', error);
@@ -905,10 +913,12 @@ const cod_purchase = async (req, res) => {
     await cart.save();
 
     const products = await Products.find({}).populate('category');
+    const banners = await banerModel.find()
     res.render('userPages/index', {
       success: 'Your order has been placed successfully via Cash on Delivery.',
       error: null,
-      products
+      products,
+      banners
     });
   } catch (error) {
     console.error('Error in COD purchase:', error);
@@ -966,12 +976,14 @@ const productSearch = async (req, res) => {
 
 const logout = async (req, res) => {
   const products = await Products.find({}).populate('category');
+  const banners = await banerModel.find()
   req.session.destroy((err) => {
     if(err){
       console.error(err)
     }
     return res.render('userPages/index', {
       products,
+      banners,
       success : 'successfully logged out',
       error : null,
       user : null
