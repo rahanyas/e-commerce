@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details for <%= selectedDate %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .product-img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+    }
+
+    .table th,
+    .table td {
+      vertical-align: middle;
+    }
+
+    .order-card {
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-header {
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .order-status {
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .btn-custom {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .btn-custom:hover {
+      background-color: #0056b3;
+      color: white;
+    }
+
+    .no-orders {
+      text-align: center;
+      font-size: 1.2em;
+      color: #6c757d;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container my-5">
+    <h1 class="text-center mb-4">Order Details for <%= selectedDate %></h1>
+
+    <% if (groupedOrders[selectedDate] && groupedOrders[selectedDate].length > 0) { %>
+      <% groupedOrders[selectedDate].forEach(order => { %>
+        <div class="card order-card mb-4">
+          <div class="card-header order-header d-flex justify-content-between align-items-center">
+            <h3 class="m-0">Order #<%= order.id %></h3>
+            <span class="badge bg-<%= order.status.toLowerCase() %> order-status"><%= order.status %></span>
+          </div>
+          <div class="card-body">
+            <table class="table table-striped table-bordered table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Product</th>
+                  <th>Name</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% order.items.forEach(item => { %>
+                  <tr>
+                    <td>
+                      <% if (item.products.images && item.products.images.length > 0) { %>
+                        <img src="<%= item.products.images[0].url %>" alt="<%= item.products.name %>" class="product-img">
+                      <% } else { %>
+                        <img src="/default-image.jpg" alt="Default Image" class="product-img">
+                      <% } %>
+                    </td>
+                    <td><%= item.products.name %></td>
+                    <td><%= item.quantity %></td>
+                    <td>$<%= item.price.toFixed(2) %></td>
+                    <td>$<%= (item.quantity * item.price).toFixed(2) %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="no-orders">
+        <p>No orders found for this date.</p>
+      </div>
+    <% } %>
+
+    <div class="text-center mt-4">
+      <a href="/viewOrder" class="btn btn-custom">Back to Orders</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

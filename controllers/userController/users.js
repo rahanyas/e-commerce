@@ -6,6 +6,7 @@ import wishListModel from "../../models/wishListSchema.js";
 import orderModel from "../../models/orderSchema.js";
 import { stripe } from "../../app.js";
 import banerModel from "../../models/banerSchema.js";
+import moment from "moment";
 
 const homePage = async (req, res) => {
   const products = await Products.find({}).populate('category');
@@ -23,7 +24,8 @@ const homePage = async (req, res) => {
       success : null,
       error : null,
       user,
-      products
+      products,
+      banners
     })
 };
 
@@ -754,6 +756,92 @@ const stripePay = async (req, res) => {
 }
 
 
+// const orderSuccess = async (req, res) => {
+//   try {
+//     const user = req.session.user;
+
+//     if (!user) {
+//       return res.status(401).send({ msg: 'Please login first.' });
+//     }
+
+//     const sessionId = req.query.session_id;
+
+//     if (!sessionId) {
+//       return res.status(400).send({ msg: 'Invalid session ID.' });
+//     }
+
+//     const session = await stripe.checkout.sessions.retrieve(sessionId);
+//     if (session.payment_status !== 'paid') {
+//       return res.status(400).send({ msg: 'Payment not completed.' });
+//     }
+
+//     const cart = await Cart.findOne({ user: user._id }).populate('items.products').exec();
+//     if (!cart || cart.items.length === 0) {
+//       return res.status(400).send({ msg: 'Your cart is empty.' });
+//     }
+
+//     const stripeOrderItems = cart.items.map(item => ({
+//       products: item.products._id,
+//       price: item.products.price,
+//       quantity: item.quantity,
+//       subtotal: item.products.price * item.quantity,
+//       paymentMethod: {
+//         method : 'stripe',
+//         transactionId : session.id
+//       }, // Assign Stripe for these items
+//     }));
+
+ 
+
+//     let order = await orderModel.findOne({ user: user._id });
+
+//     if (order) {
+//       // Append Stripe items to the existing order
+//       order.items = [...order.items, ...stripeOrderItems];
+//       order.totalPrice += cart.totalPrice;
+//       if (session) {
+//         order.paymentMethod = {
+//           method: 'stripe',
+//           transactionId: session.id,
+//         };
+//       } else {
+//         order.paymentMethod = { method: 'cod' };
+//       }
+//     } else {
+//       // Create a new order
+//        order = new orderModel({
+//         user: user._id,
+//         address: user.address,
+//         items: stripeOrderItems, // Or codOrderItems depending on the flow
+//         totalPrice: cart.totalPrice,
+//         paymentMethod: session
+//           ? { method: 'stripe', transactionId: session.id }
+//           : { method: 'cod' },
+//       });
+//     }
+
+//     await order.save();
+
+//     // Clear the user's cart
+//     cart.items = [];
+//     cart.totalPrice = 0;
+//     await cart.save();
+     
+//     const products = await Products.find({}).populate('category');
+//     const banners = await banerModel.find();
+//     res.render('userPages/index', {
+//       success: 'Your order has been placed successfully via Stripe.',
+//       error: null,
+//       products,
+//       banners
+//     });
+//   } catch (error) {
+//     console.error('Error processing order:', error);
+//     res.status(500).send({ msg: 'Something went wrong. Please try again later.' });
+//   }
+// };
+
+
 const orderSuccess = async (req, res) => {
   try {
     const user = req.session.user;
@@ -789,7 +877,13 @@ const orderSuccess = async (req, res) => {
       }, // Assign Stripe for these items
     }));
 
-    let order = await orderModel.findOne({ user: user._id });
+    const today = moment().startOf('day');
+    const endOfDay = moment(today).endOf('day');
+
+    let order = await orderModel.findOne({
+      userId: user._id,
+      orderDate: { $gte: today.toDate(), $lte: endOfDay.toDate() },
+    });
 
     if (order) {
       // Append Stripe items to the existing order
@@ -808,7 +902,8 @@ const orderSuccess = async (req, res) => {
        order = new orderModel({
         user: user._id,
         address: user.address,
-        items: stripeOrderItems, // Or codOrderItems depending on the flow
+        items: stripeOrderItems, // Or codOrderItems depending on the flow,
+        orderDate : today.toDate(),
         totalPrice: cart.totalPrice,
         paymentMethod: session
           ? { method: 'stripe', transactionId: session.id }
@@ -886,7 +981,13 @@ const cod_purchase = async (req, res) => {
       }, // Assign COD for these items
     }));
 
-    let order = await orderModel.findOne({ user: user._id });
+    const today = moment().startOf('day');
+    const endOfDay = moment(today).endOf('day');
+
+    let order = await orderModel.findOne({
+      userId: user._id,
+      orderDate: { $gte: today.toDate(), $lte: endOfDay.toDate() },
+    });
 
     if (order) {
       // Append COD items to the existing order
@@ -900,6 +1001,7 @@ const cod_purchase = async (req, res) => {
         user: user._id,
         address: user.address,
         items: codOrderItems,
+        orderDate : today.toDate(),
         totalPrice: cart.totalPrice,
         paymentMethod: { method: 'cod' }, // Set payment method at the order level
       });
@@ -928,31 +1030,143 @@ const cod_purchase = async (req, res) => {
   }
 };
 
-const orderDetails = async (req, res) => {
+// const allOrderDetails = async (req, res) => {
+//   try {
+//     const user = req.session.user;
+//     if (!user) {
+//       return res.render('userPages/login-page', {
+//         success: null,
+//         error: 'Please login to see your cart'
+//       });
+//     }
+
+//     const order = await orderModel.findOne({user : user._id}).populate('items.products');
+
+//     !order?console.log('user has not placed any order'):console.log(order);
+
+//     res.render('userPages/allOrderView', {
+//       order,
+//       user
+//     });
+//   } catch (error) {
+//     return res.status(500).send({
+//       msg : 'error occured in orderdetails'
+//     })
+//   }
+// }
+
+const allOrderDetails = async (req, res) => {
   try {
     const user = req.session.user;
     if (!user) {
       return res.render('userPages/login-page', {
         success: null,
-        error: 'Please login to see your cart'
+        error: 'Please login to see your orders'
       });
     }
 
-    const order = await orderModel.findOne({user : user._id}).populate('items.products');
+    // Fetch orders and populate the product details
+    const orders = await orderModel
+      .find({ user: user._id })
+      .sort({ orderDate: -1 }) // Sort by order date
+      .populate('items.products');
 
-    !order?console.log('user has not placed any order'):console.log(order);
+    if (!orders || orders.length === 0) {
+      console.log('User has not placed any order');
+      return res.render('userPages/viewOrder', {
+        order: null,
+        user,
+        error: 'You have not placed any orders yet.'
+      });
+    }
 
+    // Group orders by date
+    const groupedOrders = {};
+    orders.forEach((order) => {
+      const date = moment(order.orderDate).format('YYYY-MM-DD');
+      if (!groupedOrders[date]) {
+        groupedOrders[date] = [];
+      }
+      groupedOrders[date].push(order);
+    });
+
+    // Get the selected date from query parameter
+    const selectedDate = req.query.date;
+
+    if (selectedDate) {
+      // Filter orders based on the selected date
+      const filteredOrders = groupedOrders[selectedDate] || [];
+
+      // Render the orders for the selected date
+      return res.render('userPages/allOrderView', {
+        groupedOrders: { [selectedDate]: filteredOrders }, // Pass the filtered orders for the specific date
+        user,
+        selectedDate
+      });
+    }
+
+    // If no date is selected, render all orders grouped by date
+    res.render('userPages/allOrderView', {
+      groupedOrders,  // Pass all grouped orders
+      user
+    });
+
+  } catch (error) {
+    console.error('Error in allOrderDetails:', error);
+    return res.status(500).send({
+      msg: 'An error occurred while retrieving your orders.'
+    });
+  }
+};
+
+
+
+const orderDetails = async (req, res) => {
+  try {
+    const user = req.session.user; // Get user from session
+    if (!user) {
+      return res.render('userPages/login-page', {
+        success: null,
+        error: 'Please login to view your orders'
+      });
+    }
+
+    // Fetch orders and populate the product details
+    const orders = await orderModel
+      .find({ user: user._id })
+      .sort({ orderDate: -1 }) // Sort by order date
+      .populate('items.products'); // Assuming 'items' has 'products' as a reference
+
+    if (!orders || orders.length === 0) {
+      return res.render('userPages/viewOrder', {
+        groupedOrders: null,
+        user,
+        error: 'You have no orders yet.'
+      });
+    }
+
+    // Group orders by date
+    const groupedOrders = {};
+    orders.forEach((order) => {
+      const date = moment(order.orderDate).format('YYYY-MM-DD');
+      if (!groupedOrders[date]) {
+        groupedOrders[date] = [];
+      }
+      groupedOrders[date].push(order);
+    });
+
+    // Render the view with grouped orders
     res.render('userPages/viewOrder', {
-      order,
+      groupedOrders,
       user
     });
   } catch (error) {
+    console.error('Error in orderDetails:', error);
     return res.status(500).send({
-      msg : 'error occured in orderdetails'
-    })
+      msg: 'An error occurred while retrieving order details.',
+    });
   }
-}
-
+};
 
 const contactPage = (req, res) => {
   res.render('userPages/contact');
@@ -1016,5 +1230,6 @@ export {
   cod_purchase,
   quantityChange,
   productSearch,
+  allOrderDetails,
   orderDetails
 }
