@@ -685,6 +685,7 @@ const orderPage = async (req, res) => {
     
     const user = req.session.user;
     !user ? console.log('pls login'): console.log(user);
+    console.log(req.body);
     
     const cart = await Cart.findOne({user : user._id}).populate('items.products');
     !cart ? console.log('user has no cart'):console.log(cart);
@@ -703,7 +704,9 @@ const orderPage = async (req, res) => {
       msg : 'an error occrured while getting the orderPage'
     })
   }
-}
+};
+
+
 
 const stripePay = async (req, res) => {
       try {
@@ -845,7 +848,7 @@ const stripePay = async (req, res) => {
 const orderSuccess = async (req, res) => {
   try {
     const user = req.session.user;
-
+ 
     if (!user) {
       return res.status(401).send({ msg: 'Please login first.' });
     }
@@ -865,20 +868,21 @@ const orderSuccess = async (req, res) => {
     if (!cart || cart.items.length === 0) {
       return res.status(400).send({ msg: 'Your cart is empty.' });
     }
+    const today = moment().startOf('day');
+    const endOfDay = moment(today).endOf('day');
 
     const stripeOrderItems = cart.items.map(item => ({
       products: item.products._id,
       price: item.products.price,
       quantity: item.quantity,
-      subtotal: item.products.price * item.quantity,
+      subtotal: item.products.price * item.quantity,// Assign Stripe for these items
       paymentMethod: {
         method : 'stripe',
         transactionId : session.id
-      }, // Assign Stripe for these items
+      }, 
     }));
 
-    const today = moment().startOf('day');
-    const endOfDay = moment(today).endOf('day');
+
 
     let order = await orderModel.findOne({
       userId: user._id,
@@ -903,11 +907,11 @@ const orderSuccess = async (req, res) => {
         user: user._id,
         address: user.address,
         items: stripeOrderItems, // Or codOrderItems depending on the flow,
-        orderDate : today.toDate(),
         totalPrice: cart.totalPrice,
         paymentMethod: session
           ? { method: 'stripe', transactionId: session.id }
           : { method: 'cod' },
+        orderDate : today.toDate(),
       });
     }
 
@@ -959,76 +963,76 @@ const orderCancel = async (req, res) => {
   }
 }
 
-const cod_purchase = async (req, res) => {
-  try {
-    const user = req.session.user;
-    if (!user) {
-      return res.status(401).send({ msg: 'Please log in to continue.' });
-    }
+// const cod_purchase = async (req, res) => {
+//   try {
+//     const user = req.session.user;
+//     if (!user) {
+//       return res.status(401).send({ msg: 'Please log in to continue.' });
+//     }
 
-    const cart = await Cart.findOne({ user: user._id }).populate('items.products').exec();
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).send({ msg: 'Your cart is empty. Please add items to proceed.' });
-    }
+//     const cart = await Cart.findOne({ user: user._id }).populate('items.products').exec();
+//     if (!cart || cart.items.length === 0) {
+//       return res.status(400).send({ msg: 'Your cart is empty. Please add items to proceed.' });
+//     }
 
-    const codOrderItems = cart.items.map(item => ({
-      products: item.products._id,
-      price: item.products.price,
-      quantity: item.quantity,
-      subtotal: item.products.price * item.quantity,
-      paymentMethod: {
-        method : 'cod'
-      }, // Assign COD for these items
-    }));
+//     const today = moment().startOf('day');
+//     const endOfDay = moment(today).endOf('day');
 
-    const today = moment().startOf('day');
-    const endOfDay = moment(today).endOf('day');
+//     const codOrderItems = cart.items.map(item => ({
+//       products: item.products._id,
+//       price: item.products.price,
+//       quantity: item.quantity,
+//       subtotal: item.products.price * item.quantity,
+//       paymentMethod: {
+//         method : 'cod'
+//       }
+//     }));
 
-    let order = await orderModel.findOne({
-      userId: user._id,
-      orderDate: { $gte: today.toDate(), $lte: endOfDay.toDate() },
-    });
+//     let order = await orderModel.findOne({
+//       userId: user._id,
+//       orderDate: { $gte: today.toDate(), $lte: endOfDay.toDate() },
+//     });
 
-    if (order) {
-      // Append COD items to the existing order
-      order.items = [...order.items, ...codOrderItems];
-      order.totalPrice += cart.totalPrice;
-      order.paymentMethod = order.paymentMethod || {}; // Initialize if undefined
-      order.paymentMethod.method = 'cod';
-    } else {
-      // Create a new order
-      order = new orderModel({
-        user: user._id,
-        address: user.address,
-        items: codOrderItems,
-        orderDate : today.toDate(),
-        totalPrice: cart.totalPrice,
-        paymentMethod: { method: 'cod' }, // Set payment method at the order level
-      });
-    }
+//     if (order) {
+//       // Append COD items to the existing order
+//       order.items = [...order.items, ...codOrderItems];
+//       order.totalPrice += cart.totalPrice;
+//       order.paymentMethod = order.paymentMethod || {}; // Initialize if undefined
+//       order.paymentMethod.method = 'cod';
+//     } else {
+//       // Create a new order
+//       order = new orderModel({
+//         user: user._id,
+//         address: user.address,
+//         items: codOrderItems,
+//         totalPrice: cart.totalPrice,
+//         paymentMethod: { method: 'cod' },        
+//         orderDate : today.toDate(),
+//       });
+//     }
 
-    await order.save();
+//     await order.save();
 
-    // Clear the user's cart
-    cart.items = [];
-    cart.totalPrice = 0;
-    await cart.save();
+//     // Clear the user's cart
+//     cart.items = [];
+//     cart.totalPrice = 0;
+//     await cart.save();
 
-    const products = await Products.find({}).populate('category');
-    const banners = await banerModel.find()
-    res.render('userPages/index', {
-      success: 'Your order has been placed successfully via Cash on Delivery.',
-      error: null,
-      products,
-      banners
-    });
-  } catch (error) {
-    console.error('Error in COD purchase:', error);
-    res.status(500).send({
-      msg: 'An error occurred while processing your COD order. Please try again later.',
-    });
-  }
-};
+//     const products = await Products.find({}).populate('category');
+//     const banners = await banerModel.find()
+//     res.render('userPages/index', {
+//       success: 'Your order has been placed successfully via Cash on Delivery.',
+//       error: null,
+//       products,
+//       banners
+//     });
+//   } catch (error) {
+//     console.error('Error in COD purchase:', error);
+//     res.status(500).send({
+//       msg: 'An error occurred while processing your COD order. Please try again later.',
+//     });
+//   }
+// };
 
 // const allOrderDetails = async (req, res) => {
 //   try {
@@ -1055,118 +1059,170 @@ const cod_purchase = async (req, res) => {
 //   }
 // }
 
-const allOrderDetails = async (req, res) => {
+const cod_purchase = async (req, res) => {
   try {
     const user = req.session.user;
     if (!user) {
-      return res.render('userPages/login-page', {
-        success: null,
-        error: 'Please login to see your orders'
-      });
+      return res.status(401).send({ msg: 'Please log in to continue.' });
     }
 
-    // Fetch orders and populate the product details
-    const orders = await orderModel
-      .find({ user: user._id })
-      .sort({ orderDate: -1 }) // Sort by order date
-      .populate('items.products');
-
-    if (!orders || orders.length === 0) {
-      console.log('User has not placed any order');
-      return res.render('userPages/viewOrder', {
-        order: null,
-        user,
-        error: 'You have not placed any orders yet.'
-      });
+    const cart = await Cart.findOne({ user: user._id }).populate('items.products').exec();
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).send({ msg: 'Your cart is empty. Please add items to proceed.' });
     }
 
-    // Group orders by date
-    const groupedOrders = {};
-    orders.forEach((order) => {
-      const date = moment(order.orderDate).format('YYYY-MM-DD');
-      if (!groupedOrders[date]) {
-        groupedOrders[date] = [];
-      }
-      groupedOrders[date].push(order);
+    const today = moment().startOf('day');
+    const endOfDay = moment(today).endOf('day');
+
+    const codOrderItems = cart.items.map(item => ({
+      products: item.products._id,
+      price: item.products.price,
+      quantity: item.quantity,
+      subtotal: item.products.price * item.quantity,
+      paymentMethod: { method: 'cod' }, // Ensure this field is set for every item
+    }));
+
+    let order = await orderModel.findOne({
+      userId: user._id,
+      orderDate: { $gte: today.toDate(), $lte: endOfDay.toDate() },
     });
 
-    // Get the selected date from query parameter
-    const selectedDate = req.query.date;
-
-    if (selectedDate) {
-      // Filter orders based on the selected date
-      const filteredOrders = groupedOrders[selectedDate] || [];
-
-      // Render the orders for the selected date
-      return res.render('userPages/allOrderView', {
-        groupedOrders: { [selectedDate]: filteredOrders }, // Pass the filtered orders for the specific date
-        user,
-        selectedDate
+    if (order) {
+      // Append COD items to the existing order, ensuring paymentMethod is preserved
+      const updatedItems = codOrderItems.map(item => ({
+        ...item,
+        paymentMethod: { method: 'cod' }, // Ensure this field is present
+      }));
+      order.items = order.items || [];
+      order.items = [...order.items, ...updatedItems];
+      order.totalPrice += cart.totalPrice;
+    } else {
+      // Create a new order
+      order = new orderModel({
+        user: user._id,
+        address: user.address,
+        items: codOrderItems,
+        totalPrice: cart.totalPrice,
+        paymentMethod: { method: 'cod' },
+        orderDate: today.toDate(),
       });
     }
 
-    // If no date is selected, render all orders grouped by date
-    res.render('userPages/allOrderView', {
-      groupedOrders,  // Pass all grouped orders
-      user
-    });
+    await order.save();
 
+    // Clear the user's cart
+    cart.items = [];
+    cart.totalPrice = 0;
+    await cart.save();
+
+    const products = await Products.find({}).populate('category');
+    const banners = await banerModel.find();
+
+    res.render('userPages/index', {
+      success: 'Your order has been placed successfully via Cash on Delivery.',
+      error: null,
+      products,
+      banners,
+    });
   } catch (error) {
-    console.error('Error in allOrderDetails:', error);
-    return res.status(500).send({
-      msg: 'An error occurred while retrieving your orders.'
+    console.error('Error in COD purchase:', error);
+    res.status(500).send({
+      msg: 'An error occurred while processing your COD order. Please try again later.',
     });
   }
 };
 
 
 
-const orderDetails = async (req, res) => {
+const getOrderDates = async (req, res) => {
   try {
-    const user = req.session.user; // Get user from session
+    const user = req.session.user;
     if (!user) {
-      return res.render('userPages/login-page', {
-        success: null,
-        error: 'Please login to view your orders'
-      });
+      console.log('Please log in');
+      return res.redirect('/login');  // Redirect to login if user is not authenticated
     }
 
-    // Fetch orders and populate the product details
-    const orders = await orderModel
-      .find({ user: user._id })
-      .sort({ orderDate: -1 }) // Sort by order date
-      .populate('items.products'); // Assuming 'items' has 'products' as a reference
+    // Fetch all orders for the user
+    const orders = await orderModel.find({ user: user._id });
 
-    if (!orders || orders.length === 0) {
-      return res.render('userPages/viewOrder', {
-        groupedOrders: null,
-        user,
-        error: 'You have no orders yet.'
-      });
-    }
-
-    // Group orders by date
-    const groupedOrders = {};
-    orders.forEach((order) => {
-      const date = moment(order.orderDate).format('YYYY-MM-DD');
-      if (!groupedOrders[date]) {
-        groupedOrders[date] = [];
+    // Group orders by date (ignoring time part) to get unique order dates
+    const orderDates = [];
+    orders.forEach(order => {
+      const orderDateOnly = new Date(order.orderDate).toISOString().split('T')[0];
+      console.log(orderDateOnly); // Debugging orderDateOnly
+      if (!orderDates.includes(orderDateOnly)) {
+        orderDates.push(orderDateOnly);
       }
-      groupedOrders[date].push(order);
     });
+    
 
-    // Render the view with grouped orders
+    // Render the page with the unique order dates
     res.render('userPages/viewOrder', {
-      groupedOrders,
+      orderDates,
       user
     });
-  } catch (error) {
-    console.error('Error in orderDetails:', error);
+  } catch (err) {
+    console.log('Error:', err);
     return res.status(500).send({
-      msg: 'An error occurred while retrieving order details.',
+      msg: 'An error occurred while fetching order dates',
     });
   }
 };
+
+
+
+
+
+
+const getOrderDetailsByDate = async (req, res) => {
+  try {
+    const user = req.session.user;
+    if (!user) {
+      return res.status(401).send({
+        msg: 'Please log in',
+      });
+    }
+
+    const orderDate = req.query.orderDate;
+    if (!orderDate) {
+      return res.status(400).send({
+        msg: 'Order date is required',
+      });
+    };
+    const startOfDay = new Date(orderDate);
+    startOfDay.setUTCHours(0, 0, 0, 0); // Start of the day in UTC
+    const endOfDay = new Date(orderDate);
+    endOfDay.setUTCHours(23, 59, 59, 999); // End of the day in UTC
+    
+    // Debug the range
+    // console.log({ startOfDay, endOfDay });
+
+    const orderItemsInDate = await orderModel.find({
+      user: user._id,
+      orderDate: { $gte: startOfDay, $lte: endOfDay },
+    }).populate('items.products');
+    
+    console.log(orderItemsInDate);
+
+    res.render('userPages/allOrderView', {
+      orderItemsInDate
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      msg: 'An error occurred while fetching order details for the selected date',
+    });
+  }
+};
+
+
+
+
+
+
+
+
 
 const contactPage = (req, res) => {
   res.render('userPages/contact');
@@ -1230,6 +1286,6 @@ export {
   cod_purchase,
   quantityChange,
   productSearch,
-  allOrderDetails,
-  orderDetails
+  getOrderDates,
+  getOrderDetailsByDate
 }

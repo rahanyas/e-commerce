@@ -3,59 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Orders</title>
+  <title>Order Dates</title>
   <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f9f9f9;
+      font-family: 'Arial', sans-serif;
+    }
+    .order-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #fff;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease-in-out;
+    }
+    .order-card:hover {
+      transform: scale(1.02);
+    }
+    .view-details-btn {
+      text-decoration: none;
+    }
+    .no-orders {
+      font-size: 18px;
+      font-style: italic;
+      color: #888;
+    }
+  </style>
 </head>
 <body>
-
   <div class="container my-5">
-    <!-- Page Header -->
-    <div class="text-center mb-5">
-      <h1>Your Orders</h1>
-      <p class="text-muted">Here is a summary of all your orders, grouped by date.</p>
-    </div>
+    <h1 class="text-center mb-4">Orders by Date</h1>
 
-    <!-- Orders Section -->
-    <% if (Object.keys(groupedOrders).length > 0) { %>
-      <% Object.keys(groupedOrders).forEach(date => { %>
-        <div class="card mb-4 shadow-sm">
-          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Orders on <%= date %></h5>
-            <button 
-              class="btn btn-light btn-sm" 
-              data-bs-toggle="collapse" 
-              data-bs-target="#orderDetails-<%= date %>" 
-              aria-expanded="false" 
-              aria-controls="orderDetails-<%= date %>"
-            >
-              View Details
-            </button>
-          </div>
-          <div id="orderDetails-<%= date %>" class="collapse">
-            <div class="card-body">
-              <% groupedOrders[date].forEach(order => { %>
-                <div class="border-bottom pb-3 mb-3">
-                  <h6>Order #<%= order.id %></h6>
-                  <p><strong>Total Amount:</strong> $<%= order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2) %></p>
-                  <p><strong>Delivery Address:</strong> <%= order.address %></p>
-                  <p><strong>ZIP Code:</strong> <%= order.zip %></p>
-                  <!-- Pass the date in the URL for viewing full details -->
-                  <a href="/order-details/<%= order.id %>?date=<%= date %>" class="btn btn-outline-primary btn-sm">View Full Details</a>
-                </div>
-              <% }) %>
+    <div class="row">
+      <% if (orderDates && orderDates.length > 0) { %>
+        <% orderDates.forEach(orderDate => { %>
+          <div class="col-md-4">
+            <div class="order-card">
+              <h5 class="mb-3">Order Date: <%= new Date(orderDate).toLocaleDateString() %></h5>
+              <a href="/viewDetails/?orderDate=<%= encodeURIComponent(orderDate) %>" class="btn btn-primary view-details-btn">View Details</a>
             </div>
           </div>
+        <% }) %>
+      <% } else { %>
+        <div class="col-12 text-center">
+          <p class="no-orders">No orders found for this user.</p>
         </div>
-      <% }) %>
-    <% } else { %>
-      <div class="alert alert-warning text-center">
-        <p>No orders found!</p>
-      </div>
-    <% } %>
+      <% } %>
+    </div>
   </div>
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

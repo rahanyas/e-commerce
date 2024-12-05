@@ -37,22 +37,22 @@ const orderSchema = new mongoose.Schema({
         },
        transactionId : {
          type : String,
-       }
-     },
+       },
+     }
     }
   ],
   totalPrice : {
     type : Number,
     required : true
   },
-  orderDate : {
-    type : Date,
-    default : Date.now
-  },
   status : {
     type : String,
     enum : ['Pending', 'Shipped', 'Delivered', 'Cancelled'],
     default : 'Pending'
+  },
+  orderDate : {
+    type : Date,
+    default : Date.now
   },
 },{timestamps : true });
 
