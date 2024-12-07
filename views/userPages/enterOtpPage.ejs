@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enter OTP</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+ 
+</head>
+<body>
+
+  <style>
+body {
+  background-color: #f8f9fa;
+}
+
+.otp-card {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 10px;
+}
+
+.otp-input {
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  outline: none;
+}
+
+.otp-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+  </style>
+
+  <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow otp-card">
+      <h2 class="text-center mb-4">Enter OTP</h2>
+      <p class="text-muted text-center mb-3">Please enter the 6-digit OTP sent to your email.</p>
+      <form action="/verifyOtp" method="post">
+        <input type="hidden" name="email"  value="<%= email %>">
+        <div class="d-flex justify-content-center mb-3">
+          <input type="text" maxlength="1" class="form-control otp-input text-center" name="otp[]" required>
+          <input type="text" maxlength="1" class="form-control otp-input text-center mx-2" name="otp[]"  required>
+          <input type="text" maxlength="1" class="form-control otp-input text-center" name="otp[]"  required>
+          <input type="text" maxlength="1" class="form-control otp-input text-center mx-2" name="otp[]"  required>
+          <input type="text" maxlength="1" class="form-control otp-input text-center" name="otp[]"  required>
+          <input type="text" maxlength="1" class="form-control otp-input text-center mx-2" name="otp[]"  required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Verify OTP</button>
+      </form>
+      <p class="text-center mt-3">
+        <a href="#" class="text-decoration-none">Resend OTP</a>
+      </p>
+    </div>
+  </div>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+document.getElementById('otp-form').addEventListener('submit', function (event) {
+  event.preventDefault(); // Prevent default form submission
+
+  // Collect OTP values and join them into a single string
+  const inputs = document.querySelectorAll('.otp-input');
+  const otp = Array.from(inputs).map(input => input.value.trim()).join(''); // Joining into a single string
+
+  console.log('OTP submitted:', otp); // Log the OTP to check it's the right format
+
+  // Ensure all fields are filled
+  if (otp.length !== 6 || otp.includes('')) {
+    alert('Please fill in all OTP fields.');
+    return;
+  }
+
+  // Fetch request to verify OTP
+  fetch('/verifyOtp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ otp, email: '<%= email %>' }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('OTP Verified Successfully!');
+        window.location.href = '/resetPassword';
+      } else {
+        alert(data.message || 'Invalid OTP. Please try again.');
+      }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+
+  </script>
+
+</body>
+</html>

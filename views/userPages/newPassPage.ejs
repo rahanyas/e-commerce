@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Password</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+
+</head>
+<body>
+
+  <style>
+   body {
+    background-color: #f8f9fa; /* Light gray background */
+    font-family: Arial, sans-serif;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+h2 {
+    color: #343a40; /* Dark text color */
+}
+
+button {
+    font-size: 16px;
+    padding: 10px;
+}
+
+input::placeholder {
+    color: #6c757d; /* Placeholder text color */
+    font-style: italic;
+}
+
+  </style>
+
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="card p-4 shadow-lg" style="max-width: 400px; width: 100%;">
+            <h2 class="text-center mb-4">Create New Password</h2>
+            <form action="/reset-password" method="POST">
+                <!-- Hidden Input for Email or Token -->
+                <input type="hidden" name="email" value="<%= email %>">
+
+                <!-- New Password Field -->
+                <div class="mb-3">
+                    <label for="newPassword" class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Enter new password" required>
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password" required>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary w-100">Reset Password</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JavaScript Validation -->
+    <script>
+        document.getElementById('newPasswordForm').addEventListener('submit', function (e) {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                e.preventDefault(); // Prevent form submission
+                alert('Passwords do not match. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

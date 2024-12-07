@@ -28,6 +28,13 @@ import { loginAuth,
          getOrderDates,
          getOrderDetailsByDate,
   } from "../controllers/userController/users.js";
+
+import { 
+       forgotPassPage, 
+       sendingOtp,
+       settingNewPass,
+       validateOtp
+    } from "../public/helpers/forgotPass.js";
 // import verifyUser from "../middlewares/login.js";
 
 router.get('/',homePage);
@@ -61,6 +68,12 @@ router.get('/payment', orderPage);
 router.post('/create-checkout-session', stripePay);
 router.get('/success', orderSuccess);
 router.get('/cancel', orderCancel);
-router.post('/cod-order',cod_purchase)
+router.post('/cod-order',cod_purchase);
+
+//for forgot pw
+router.get('/forgotPass', forgotPassPage);
+router.post('/Email', sendingOtp);
+router.post('/verifyOtp', validateOtp);
+router.post('/reset-password', settingNewPass);
 
 export default router;

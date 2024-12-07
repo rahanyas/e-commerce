@@ -11,7 +11,7 @@ const orderPage = async(req, res) => {
 
 }
 
-const orderDetailsPage = async (req, res) => {
+const getOrdersDate = async (req, res) => {
     try {
    
       const userId = req.params.id;
@@ -20,13 +20,22 @@ const orderDetailsPage = async (req, res) => {
       const user = await User.findById(userId);
       // !user ? console.log('not found user'): console.log(user);
       
-      const order = await orderModel.findOne({user : user._id}).populate('items.products');
-      console.log(Array.isArray(order));
+      const orders = await orderModel.find({ user: user._id });
 
-      // !order?console.log('user has not placed any order'):console.log(order);
+      // Group orders by date (ignoring time part) to get unique order dates
+      const orderDates = [];
+      orders.forEach(order => {
+        const orderDateOnly = new Date(order.orderDate).toISOString().split('T')[0];
+        console.log(orderDateOnly); // Debugging orderDateOnly
+        if (!orderDates.includes(orderDateOnly)) {
+          orderDates.push(orderDateOnly);
+        }
+      });
+      
   
+      // Render the page with the unique order dates
       res.render('adminPages/manageOrder/orderdUsersDetails', {
-        order,
+        orderDates,
         user
       });
       
@@ -38,7 +47,47 @@ const orderDetailsPage = async (req, res) => {
     }
 };
 
+const getOrderDetailsByDate = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    // console.log(userId)
+    const user = await User.findById(userId);
+    // console.log(user)
+    const orderDate = req.query.orderDate;
+    if (!orderDate) {
+      return res.status(400).send({
+        msg: 'Order date is required',
+      });
+    };
+    const startOfDay = new Date(orderDate);
+    startOfDay.setUTCHours(0, 0, 0, 0); // Start of the day in UTC
+    const endOfDay = new Date(orderDate);
+    endOfDay.setUTCHours(23, 59, 59, 999); // End of the day in UTC
+    
+    // Debug the range
+    // console.log({ startOfDay, endOfDay });
+
+    const orderItemsInDate = await orderModel.find({
+      user: user._id,
+      orderDate: { $gte: startOfDay, $lte: endOfDay },
+    }).populate('items.products');
+    
+    // console.log(orderItemsInDate);
+
+    res.render('adminPages/manageOrder/orderdusersItems', {
+      orderItemsInDate
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      msg: 'An error occurred while fetching order details for the selected date',
+    });
+  }
+};
+
 export {
   orderPage,
-  orderDetailsPage
+  getOrdersDate,
+  getOrderDetailsByDate
 }

@@ -19,8 +19,9 @@ import {
 from "../public/helpers/pagination.js";
 
 import {
-        orderPage,
-        orderDetailsPage
+        getOrderDetailsByDate,
+        getOrdersDate,
+        orderPage,     
        } 
 from "../controllers/adminController/orderController.js";
 
@@ -28,6 +29,7 @@ import {
         addBaner,
         banerPage 
 } from "../controllers/adminController/banerController.js";
+
 
 adminrouter.get('/adminLogin', adminLoginPage);
 adminrouter.post('/adminLoginAuth', adminLoginAuth);
@@ -41,7 +43,8 @@ adminrouter.get('/admin/users/add', addUserPage);
 adminrouter.post('/addUser', UserPagination, addUserAuth);
 
 adminrouter.get('/admin/orders', orderPage);
-adminrouter.get('/viewOrderDetails/:id', orderDetailsPage);
+adminrouter.get('/viewOrderDetails/:id', getOrdersDate);
+adminrouter.get('/Details/:id', getOrderDetailsByDate);
 
 adminrouter.get('/admin/baners', banerPage)
 adminrouter.post('/admin/baners/addBaner',Upload, addBaner)

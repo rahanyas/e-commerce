@@ -710,6 +710,7 @@ const orderPage = async (req, res) => {
 
 const stripePay = async (req, res) => {
       try {
+
         console.log('Create Checkout Session Request Received');
         const user = req.session.user;
         !user ? console.log('pls login'):console.log(user);
@@ -735,7 +736,11 @@ const stripePay = async (req, res) => {
         }));
         console.log(lineItems);
         
-
+        // if(!process.env.DOMAIN || !process.env.DOMAIN.startsWith('https://')){
+        //   throw new Error('invalid domain')
+        // }
+         console.log(process.env.DOMAIN);
+         
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ['card'],
           line_items: lineItems,
@@ -1170,10 +1175,6 @@ const getOrderDates = async (req, res) => {
 };
 
 
-
-
-
-
 const getOrderDetailsByDate = async (req, res) => {
   try {
     const user = req.session.user;
@@ -1215,13 +1216,6 @@ const getOrderDetailsByDate = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
 
 
 const contactPage = (req, res) => {
