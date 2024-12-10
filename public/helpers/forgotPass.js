@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import User from '../../models/userModels.js';
 import bcrypt from 'bcryptjs/dist/bcrypt.js';
 
+
+
 const forgotPassPage = (req, res) => {
   try {
     res.render('userPages/forgotPassPage')
@@ -89,7 +91,8 @@ const validateOtp = async (req, res) => {
     await user.save();
 
     res.render('userPages/newPassPage', {
-      email
+      email,
+      error : null
     });
 
   } catch (err) {
@@ -102,8 +105,8 @@ const validateOtp = async (req, res) => {
 
 const settingNewPass = async (req, res) => {
   try {
-    const {email} = req.body;
-    console.log(email);
+    const {email, newPassword, confirmPassword} = req.body;
+    console.log(email, newPassword, confirmPassword);
 
     const user = await User.findOne({email});
     if(!user){
@@ -112,6 +115,26 @@ const settingNewPass = async (req, res) => {
       })
     }
     console.log(user);
+   
+    if(confirmPassword !== newPassword){
+       console.log('password doesnt match');
+       return res.render('userPages/newPassPage', {
+        error : 'password doesnt match',
+        email
+       })
+    }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      console.log(hashedPassword);
+      const updatePass = await User.findOneAndUpdate({email : email}, {$set : {password : hashedPassword}});
+
+      console.log('password updated successfully', updatePass);
+
+      return res.render('userPages/login-page', {
+        error : null,
+        success : 'password changed successfully'
+      })
+    
+    
   } catch (err) {
     console.log('error', err);
     return res.status(500).send({

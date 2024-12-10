@@ -44,6 +44,10 @@ input::placeholder {
                 <!-- Hidden Input for Email or Token -->
                 <input type="hidden" name="email" value="<%= email %>">
 
+                <% if (error) { %>
+                     <p><%= error %></p>
+                <% } %>
+
                 <!-- New Password Field -->
                 <div class="mb-3">
                     <label for="newPassword" class="form-label">New Password</label>

@@ -7,9 +7,9 @@ import { adminLoginPage,
          manageUser, 
          editUserPage, 
          editUser, 
-         addUserPage, 
-         addUserAuth, 
-         adminHomePage
+         adminHomePage,
+         searchUser,
+         blockUser
         } 
 from "../controllers/adminController/userController.js";
 
@@ -38,9 +38,10 @@ adminrouter.get('/admin/users', UserPagination, manageUser);
 
 adminrouter.get('/admin/users/edit/:id', editUserPage)
 adminrouter.post('/editUser/:id', editUser);
+adminrouter.post('/admin/users/delete/:id', blockUser)
 
-adminrouter.get('/admin/users/add', addUserPage);
-adminrouter.post('/addUser', UserPagination, addUserAuth);
+// adminrouter.get('/admin/users/add', addUserPage);
+// adminrouter.post('/addUser', UserPagination, addUserAuth);
 
 adminrouter.get('/admin/orders', orderPage);
 adminrouter.get('/viewOrderDetails/:id', getOrdersDate);
@@ -48,5 +49,7 @@ adminrouter.get('/Details/:id', getOrderDetailsByDate);
 
 adminrouter.get('/admin/baners', banerPage)
 adminrouter.post('/admin/baners/addBaner',Upload, addBaner)
+
+adminrouter.post('/search', searchUser);
 
 export default adminrouter;
