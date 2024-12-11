@@ -38,7 +38,7 @@ adminrouter.get('/admin/users', UserPagination, manageUser);
 
 adminrouter.get('/admin/users/edit/:id', editUserPage)
 adminrouter.post('/editUser/:id', editUser);
-adminrouter.post('/admin/users/delete/:id', blockUser)
+adminrouter.post('/admin/users/delete/:id', UserPagination, blockUser)
 
 // adminrouter.get('/admin/users/add', addUserPage);
 // adminrouter.post('/addUser', UserPagination, addUserAuth);

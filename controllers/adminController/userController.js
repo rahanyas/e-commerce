@@ -56,7 +56,7 @@ const manageUser = async (req, res) => {
         totalPages,
         totalUsers,
         limit,
-      })
+      });
 
 };
 
@@ -115,14 +115,27 @@ const blockUser = async (req, res) => {
          const user = await User.findById({_id : userId});
          console.log(user);
 
-         const blockUser = await User.findByIdAndUpdate({_id : userId}, {$set : {isBlocked : true}});
+         if(user.isBlocked === 'false'){
+           const blockUser = await User.findByIdAndUpdate({_id : userId}, {$set : {isBlocked : true}});
+           if(blockUser){
+            console.log(`user ${user.fullName} is blocked`);
+            console.log(user);
+          }
+        }else{
+          const unBlockUser = await User.findByIdAndUpdate({_id : userId}, {$set : {isBlocked : false}});
+          console.log(`user ${user.fullName} is unblocked`)
+        }
 
-         if(blockUser){
-          console.log(`user ${user.fullName} is blocked`);
-          console.log(user);
-         }else{
-          console.log('user is not blocked');
-         };
+        const  {users,currentPage, totalPages, totalUsers, limit} = req.pagination;
+        // const users = await User.find
+        return res.render('adminPages/manageUser/viewUsers', {
+          users,
+          currentPage,
+          totalPages,
+          totalUsers,
+          limit,
+        });
+  
 
      } catch (err) {
       console.log('error : ', err);
