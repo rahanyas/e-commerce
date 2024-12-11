@@ -27,6 +27,7 @@ import { loginAuth,
          cod_purchase,
          getOrderDates,
          getOrderDetailsByDate,
+         contactUs,
   } from "../controllers/userController/users.js";
 
 import { 
@@ -44,6 +45,7 @@ router.post('/loginAuth', loginAuth);
 router.get('/logout', logout);
 
 router.get('/contact', contactPage);
+router.post('/contactUs', contactUs);
 
 router.get('/product', productPage);
 router.get('/productDetail/:id', productDetailsPage);

@@ -7,6 +7,7 @@ import orderModel from "../../models/orderSchema.js";
 import { stripe } from "../../app.js";
 import banerModel from "../../models/banerSchema.js";
 import moment from "moment";
+import nodemailer from 'nodemailer';
 
 const homePage = async (req, res) => {
   const products = await Products.find({}).populate('category');
@@ -1219,8 +1220,47 @@ const getOrderDetailsByDate = async (req, res) => {
 
 
 const contactPage = (req, res) => {
-  res.render('userPages/contact');
+   res.render('userPages/contact', {
+    error : null,
+    success : null,
+   });
 };
+
+const contactUs = async (req, res) => {
+  try {
+    const {email, msg} = req.body;
+    const user = req.session.user;
+    console.log(user);
+    console.log('email : ', email);
+    console.log('msg : ', msg);
+   
+    const transporter = nodemailer.createTransport({
+      service : 'gmail',
+      auth : {
+        user : process.env.NODEMAIL_MAIL,
+        pass : process.env.NODEMAIL_PASSWORD 
+      }
+    });
+
+    await transporter.sendMail({
+      from : email,
+      to : process.env.NODEMAIL_MAIL,
+      subject : `A Message Recieved From ${user.fullName}`,
+      text : msg,
+      replyTo : email
+    })
+    console.log('msg sent successfully');
+    return res.render('userPages/contact', {
+     error : null,
+     success : 'msg sent successfully'
+    })
+  } catch (err) {
+    console.log('error', err);
+    return res.send({
+      msg : 'an error occured in while contacting us'
+    })
+  }
+}
 
 const productSearch = async (req, res) => {
   const query = req.query.query;
@@ -1261,6 +1301,7 @@ export {
   loginPage,
   loginAuth,
   contactPage,
+  contactUs,
   myProfile,
   userInfoPage,
   logout,
