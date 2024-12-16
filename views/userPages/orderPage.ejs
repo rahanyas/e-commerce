@@ -138,9 +138,41 @@
     </div>
 
     <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+      <!-- Coupons Section -->
+      <div class="available-coupons p-3 mb-4 border rounded col-md-6 mx-auto">
+        <h5 class="text-primary mb-3">Available Coupons</h5>
+        <% if (coupons && coupons.length > 0) { %>
+          <div class="mb-3">
+            <select class="form-select" id="couponDropdown">
+              <option selected disabled>Choose a coupon</option>
+              <% coupons.forEach(ele => { %>
+                <option value="<%= ele.code %>">
+                  <%= ele.code %> - <%= ele.description %> (<%= ele.discount %>% Off)
+                </option>
+              <% }) %>
+            </select>
+          </div>
+        <% } else { %>
+          <p class="text-muted">No coupons available at the moment.</p>
+        <% } %>
+      </div>
+    
       <div class="row justify-content-center">
         <div class="col-md-6">
-          <h4 class="mb-4">Select Payment Method</h4>
+          <!-- Coupon Input Section -->
+
+          <% if (coupons && coupons.length > 0) { %>           
+            <div class="coupon-section mb-4 p-3 border rounded">
+              <h5 class="text-primary mb-3">Apply Coupon code</h5>
+              <div class="input-group">
+                <input type="text" class="form-control" name="couponcode" id="couponCode" placeholder="Enter coupon code">
+                <button class="btn btn-primary" type="button" id="applyCouponBtn">Apply</button>
+              </div>
+            </div>
+          <% } %>
+    
+          <!-- Payment Methods -->
+          <h5 class="text-primary mb-3">Select Payment Method</h5>
     
           <!-- Stripe Option -->
           <div class="form-check mb-3">
@@ -161,9 +193,11 @@
       </div>
     </div>
     
+    
+    
 
     <!-- Product Details -->
-    <div class="tab-pane fade" id="product" role="tabpanel" aria-labelledby="product-tab">
+    <div class="tab-pane fade mb-3" id="product" role="tabpanel" aria-labelledby="product-tab">
       <div class="container">
         <h4 class="mb-4 text-center">Product Details</h4>
         <% if (cart) { %>
@@ -206,22 +240,51 @@
 
 $(document).ready(function() {
     console.log('jQuery is working');
-    // Initially hide both buttons
+    
+    // $('#stripe-proceed-btn').hide();
+    // $('#purchase-btn').hide();
+
+    
+    // $('#stripe, #cod').click(function() {
+    //     console.log('Payment method selected'); 
+    //     $('#stripe-proceed-btn').hide();
+    //     $('#purchase-btn').hide();
+
+    //     if ($('#stripe').is(':checked')) {
+    //         $('#stripe-proceed-btn').show();  
+    //     } else if ($('#cod').is(':checked')) {
+    //         $('#purchase-btn').show();  
+    //     }
+    // });
+
+    $('#stripe-proceed-btn').hide();
+$('#purchase-btn').hide();
+
+// Show or hide the buttons based on the selected payment method
+$('input[name="paymentMethod"]').change(function () {
+    const stripeChecked = $('#stripe').is(':checked');
+    const codChecked = $('#cod').is(':checked');
+
+    // Hide both buttons initially
     $('#stripe-proceed-btn').hide();
     $('#purchase-btn').hide();
 
-    // Show the appropriate button when either payment method is selected
-    $('#stripe, #cod').click(function() {
-        console.log('Payment method selected'); // Log to confirm this is firing
-        $('#stripe-proceed-btn').hide();
-        $('#purchase-btn').hide();
+    // Show the respective button if the corresponding radio button is selected
+    if (stripeChecked) {
+        $('#stripe-proceed-btn').show();
+    } else if (codChecked) {
+        $('#purchase-btn').show();
+    }
+});
 
-        if ($('#stripe').is(':checked')) {
-            $('#stripe-proceed-btn').show();  // Show Stripe button
-        } else if ($('#cod').is(':checked')) {
-            $('#purchase-btn').show();  // Show COD button
-        }
-    });
+$('input[name="paymentMethod"]').on('click', function () {
+    if ($(this).data('waschecked')) {
+        $(this).prop('checked', false).data('waschecked', false);
+    } else {
+        $('input[name="paymentMethod"]').data('waschecked', false); // Reset others
+        $(this).data('waschecked', true);
+    }
+});
 
     const stripe = Stripe("<%= stripeKey %>");
 
@@ -229,32 +292,54 @@ $(document).ready(function() {
   $('#stripe-proceed-btn').click(function() {
     console.log("Button clicked");
     
+    const seletedCoupon = $('#couponCode').val();
+    console.log(seletedCoupon)
     // Assuming you're using fetch or Axios to send the request to create a session:
-fetch('/create-checkout-session', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ /* any required data here */ }),
-})
-  .then((response) => response.json())
-  .then((session) => {
-    // Redirect to Stripe checkout
-    return stripe.redirectToCheckout({ sessionId: session.id });
-  })
-  .then((result) => {
-    if (result.error) {
-      // Display error to your customer (e.g., insufficient funds)
-      alert(result.error.message);
-    }
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-  });
+    fetch('/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        couponCode : seletedCoupon
+      }),
+    })
+      .then((response) => response.json())
+      .then((session) => {
+        // Redirect to Stripe checkout
+        return stripe.redirectToCheckout({ sessionId: session.id });
+      })
+      .then((result) => {
+        if (result.error) {
+          // Display error to your customer (e.g., insufficient funds)
+          alert(result.error.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
 
   });
 });
 });
+
+document.getElementById('couponDropdown')?.addEventListener('change', function() {
+    const selectedCoupon = this.value;
+    if (selectedCoupon) {
+      document.getElementById('couponCode').value = selectedCoupon;
+    }
+  });
+
+  document.getElementById('applyCouponBtn')?.addEventListener('click', function() {
+    const couponCode = document.getElementById('couponCode').value;
+    if (couponCode) {
+      alert(`Coupon "${couponCode}" applied successfully!`);
+      // Add logic to validate and apply the coupon
+    } else {
+      alert('Please select or enter a valid coupon code.');
+    }
+  });
+
   </script>
 
 

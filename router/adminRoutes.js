@@ -30,6 +30,12 @@ import {
         banerPage 
 } from "../controllers/adminController/banerController.js";
 
+import { 
+        addCoupons,
+        viewCoupnPage 
+       } 
+from "../controllers/adminController/coupnControll.js";
+
 
 adminrouter.get('/adminLogin', adminLoginPage);
 adminrouter.post('/adminLoginAuth', adminLoginAuth);
@@ -51,5 +57,8 @@ adminrouter.get('/admin/baners', banerPage)
 adminrouter.post('/admin/baners/addBaner',Upload, addBaner)
 
 adminrouter.post('/search', searchUser);
+
+adminrouter.get('/admin/coupon', viewCoupnPage)
+adminrouter.post('/addCoupon', addCoupons)
 
 export default adminrouter;

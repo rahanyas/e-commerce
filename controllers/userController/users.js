@@ -8,6 +8,7 @@ import { stripe } from "../../app.js";
 import banerModel from "../../models/banerSchema.js";
 import moment from "moment";
 import nodemailer from 'nodemailer';
+import Coupon from "../../models/couponSchema.js";
 
 const homePage = async (req, res) => {
   const products = await Products.find({}).populate('category');
@@ -428,7 +429,10 @@ const CartPage = async (req, res) => {
         error: 'You have not added any products to your cart',
         success: null
       });
-    }
+    };
+    console.log(cart.totalPrice)
+
+
 
     return res.render('userPages/shoping-cart', {
       products: cart.items,
@@ -473,10 +477,10 @@ const quantityChange = async (req, res) => {
       cart.items[itemIndex].subTotal = cart.items[itemIndex].price * quantity;
 
       // Update the cart in the database
+      const totalPrice = cart.items.reduce((total, item) => total + item.subTotal, 0);
+      cart.totalPrice = totalPrice;
       await cart.save();
 
-      // Calculate total price
-      const totalPrice = cart.items.reduce((total, item) => total + item.subTotal, 0);
 
       res.json({
           success: true,
@@ -690,14 +694,18 @@ const orderPage = async (req, res) => {
     
     const cart = await Cart.findOne({user : user._id}).populate('items.products');
     !cart ? console.log('user has no cart'):console.log(cart);
+    const coupons = await Coupon.find({minimumPurchase : {$lte : cart.totalPrice}});
+    console.log(coupons);
     
     const totalPrice = cart.totalPrice
     return res.render('userPages/orderPage', {
       user,
       cart : cart.items,
       totalPrice,
-      stripeKey : process.env.STRIPE_PUBLISHABLE_KEY
-    })
+      stripeKey : process.env.STRIPE_PUBLISHABLE_KEY,
+      coupons
+    });
+
     //  console.log( process.env.STRIPE_PUBLISHABLE_KEY)
   } catch (error) {
     console.log(error);
@@ -716,14 +724,31 @@ const stripePay = async (req, res) => {
         const user = req.session.user;
         !user ? console.log('pls login'):console.log(user);
 
+        const {couponCode } = req.body;
+        console.log('this is coupon code : ', couponCode);
+
+        const selectedCoupon = await Coupon.aggregate([{$match : {
+          code : couponCode
+        }}, {
+          $project : {
+            discount : 1,
+            _id : 0
+          }
+        }]);
+
+        console.log(selectedCoupon);
+       const coupon = selectedCoupon[0];
+        const discountMultiplier = coupon ? (1 -coupon.discount / 100) : 1;
+
         const cart = await Cart.findOne({user : user._id}).populate('items.products').exec();
-         console.log(cart);
+         console.log('this is cart : ' , cart);
 
         if(!cart || cart.items.length === 0){
            return res.send({
             msg : 'your cart is empty'
            })
-        }
+        };
+
 
         const lineItems = cart.items.map(item => ({
           price_data : {
@@ -731,22 +756,23 @@ const stripePay = async (req, res) => {
             product_data : {
               name : item.products.name,
             },
-            unit_amount : item.products.price * 100,
+            unit_amount : Math.round(item.products.price * 100 * discountMultiplier),
           },
           quantity : item.quantity,
         }));
-        console.log(lineItems);
+        console.log('this is lineitems : ', lineItems);
+
         
         // if(!process.env.DOMAIN || !process.env.DOMAIN.startsWith('https://')){
         //   throw new Error('invalid domain')
         // }
-         console.log(process.env.DOMAIN);
+        //  console.log(process.env.DOMAIN);
          
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ['card'],
           line_items: lineItems,
           mode: 'payment',
-          success_url: `${process.env.DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+          success_url: `${process.env.DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}&code=${couponCode}`,
           cancel_url: `${process.env.DOMAIN}/cancel`,
         });
         
@@ -858,9 +884,11 @@ const orderSuccess = async (req, res) => {
     if (!user) {
       return res.status(401).send({ msg: 'Please login first.' });
     }
+    const couponCode = req.query.code;
+    console.log(couponCode)
 
     const sessionId = req.query.session_id;
-
+  
     if (!sessionId) {
       return res.status(400).send({ msg: 'Invalid session ID.' });
     }
@@ -887,18 +915,28 @@ const orderSuccess = async (req, res) => {
         transactionId : session.id
       }, 
     }));
-
-
-
     let order = await orderModel.findOne({
       userId: user._id,
       orderDate: { $gte: today.toDate(), $lte: endOfDay.toDate() },
     });
 
+    let discount = 0;
+    if(couponCode){
+      const coupon = await Coupon.findOne({code : couponCode});
+      if(coupon && coupon.isActive){
+        discount = coupon.discount;
+      }      // console.log(coupon)
+    }
+
+    const cartTotal = cart.totalPrice;
+    const discountedTotal = cartTotal * (1- discount / 100);
+    
+
     if (order) {
       // Append Stripe items to the existing order
       order.items = [...order.items, ...stripeOrderItems];
-      order.totalPrice += cart.totalPrice;
+      // const discountMultiplier = couponcode ? (1 -coupon.discount / 100) : 1;
+      order.totalPrice = discountedTotal;
       if (session) {
         order.paymentMethod = {
           method: 'stripe',
@@ -913,7 +951,7 @@ const orderSuccess = async (req, res) => {
         user: user._id,
         address: user.address,
         items: stripeOrderItems, // Or codOrderItems depending on the flow,
-        totalPrice: cart.totalPrice,
+        totalPrice: discountedTotal,
         paymentMethod: session
           ? { method: 'stripe', transactionId: session.id }
           : { method: 'cod' },
