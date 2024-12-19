@@ -440,7 +440,7 @@ const CartPage = async (req, res) => {
     };
     console.log(cart.totalPrice)
 
-
+      console.log(cart.items.products)
 
     return res.render('userPages/shoping-cart', {
       products: cart.items,
