@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f9f9f9;
+    }
+    .order-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #fff;
+    }
+    .order-header {
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px 15px;
+    }
+    .product-img {
+      max-width: 50%;
+      height: auto;
+      border-radius: 4px;
+      position: relative;
+      right: 105px;
+    }
+    .product-details {
+      padding: 10px 15px;
+    }
+    .empty-message {
+      font-size: 18px;
+      color: #888;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container my-5">
+    <h1 class="text-center mb-4">Order Details</h1>
+
+    <div class="order-details">
+      <% if (orderItemsInDate && orderItemsInDate.length > 0) { %>
+        <% orderItemsInDate.forEach(order => { %>
+          <div class="order-card mb-4 shadow-sm">
+            <!-- Order Body -->
+            <div class="card-body">
+              <div class="row align-items-center">
+                <% order.items.forEach(item => { %>
+                  <div class="col-md-4 text-center mb-3 mb-md-0">
+                    <img 
+                      src="<%= item.products.images && item.products.images[0] ? item.products.images[0].url : '/path/to/default-image.jpg' %>" 
+                      alt="<%= item.products.name %>" 
+                      class="product-img">
+                  </div>
+                  <div class="col-md-8 product-details">
+                    <h6 class="fw-bold"><%= item.products.name %></h6>
+                    <p class="mb-1"><strong>Price:</strong> $<%= item.price %></p>
+                    <p class="mb-1"><strong>Quantity:</strong> <%= item.quantity %></p>
+                    <p class="mb-0">Status: <span class="badge bg-success"><%= order.status %></span></p>
+                    <p class="mb-1"><strong>Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                    <h5 class="mb-1">Order ID: <%= order._id %></h5>
+                  </div>
+                  <% }) %>
+                  <h5 class="mb-2 text-center text-capitalize">total-price: $<%= order.totalPrice %></h5>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="text-center">
+          <p class="empty-message">No orders found for this date.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

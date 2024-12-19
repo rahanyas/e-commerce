@@ -1,31 +1,43 @@
 <section class="section-slide">
   <div class="wrap-slick1">
     <div class="slick1">
-      <div class="item-slick1" style="background-image: url(images/slide-01.jpg);">
-        <div class="container h-full">
-          <div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
-            <div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
-              <span class="ltext-101 cl2 respon2">
-                Women Collection 2018
-              </span>
-            </div>
-              
-            <div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
-              <h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1">
-                NEW SEASON
-              </h2>
-            </div>
-              
-            <div class="layer-slick1 animated visible-false" data-appear="zoomIn" data-delay="1600">
-              <a href="/product" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
-                Shop Now
-              </a>
+      <!-- starting of the baner -->
+       <% if (banners && banners.length > 0) { %>
+         <% banners.forEach(item => { %>
+          
+          <div class="item-slick1" style="background-image: url('<%= item.images[0]?.url %> ');">
+            <div class="container h-full">
+              <div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
+                <div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
+    
+                  <!-- title 1 -->
+                  <span class="ltext-101 cl2 respon2">
+                   <%= item.titleOne %>
+                  </span>
+                </div>
+                  
+                <!-- title 2 -->
+                <div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
+                  <h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1">
+                    <%= item.titleTwo %>
+                  </h2>
+                </div>
+                  
+                <!-- title 3 -->
+                <div class="layer-slick1 animated visible-false" data-appear="zoomIn" data-delay="1600">
+                  <a href="/product" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
+                    <%= item.titleThree %>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+         <% }) %>
+       <% } %>
+      <!-- use foreach to get the img from backend  -->
+    <!-- ending of the baner  -->
 
-      <div class="item-slick1" style="background-image: url(images/slide-02.jpg);">
+      <!-- <div class="item-slick1" style="background-image: url(images/slide-02.jpg);">
         <div class="container h-full">
           <div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
             <div class="layer-slick1 animated visible-false" data-appear="rollIn" data-delay="0">
@@ -71,7 +83,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </section>

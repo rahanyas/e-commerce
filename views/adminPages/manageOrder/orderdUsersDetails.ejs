@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Dates</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f9f9f9;
+      font-family: 'Arial', sans-serif;
+    }
+    .order-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #fff;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease-in-out;
+    }
+    .order-card:hover {
+      transform: scale(1.02);
+    }
+    .view-details-btn {
+      text-decoration: none;
+    }
+    .no-orders {
+      font-size: 18px;
+      font-style: italic;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container my-5">
+    <h1 class="text-center mb-4">Orders by Date</h1>
+
+    <div class="row">
+      <% if (orderDates && orderDates.length > 0) { %>
+        <% orderDates.forEach(orderDate => { %>
+          <div class="col-md-4">
+            <div class="order-card">
+              <h5 class="mb-3">Order Date: <%= new Date(orderDate).toLocaleDateString() %></h5>
+              <a href="/Details/<%= user._id %>?orderDate=<%= encodeURIComponent(orderDate) %>" class="btn btn-primary view-details-btn">View Details</a>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="col-12 text-center">
+          <p class="no-orders">No orders found for this user.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -28,27 +28,33 @@ const orderSchema = new mongoose.Schema({
       subtotal : {
         type : Number,
         required : true
-      }
+      },
+      paymentMethod : {
+        method : {
+         type : String,
+         enum : ['stripe', 'cod'],
+         required : true
+        },
+       transactionId : {
+         type : String,
+       },
+     }
     }
   ],
   totalPrice : {
     type : Number,
     required : true
   },
-  orderDate : {
-    type : Date,
-    default : Date.now
-  },
   status : {
     type : String,
     enum : ['Pending', 'Shipped', 'Delivered', 'Cancelled'],
     default : 'Pending'
   },
-  paymentMethod : {
-    type : String,
-    required : true
-  }
-});
+  orderDate : {
+    type : Date,
+    default : Date.now
+  },
+},{timestamps : true });
 
 const orderModel = new mongoose.model('Order', orderSchema);
 

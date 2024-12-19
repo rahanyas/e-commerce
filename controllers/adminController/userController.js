@@ -55,8 +55,8 @@ const manageUser = async (req, res) => {
         currentPage,
         totalPages,
         totalUsers,
-        limit
-      })
+        limit,
+      });
 
 };
 
@@ -105,47 +105,100 @@ const editUser = async (req, res) => {
   } catch (error) {
     console.error(error)
   }
-}
-
-const addUserPage = (req, res) => {
-  res.render('adminPages/manageUser/addUser', {
-    error : null
-  })
 };
 
-const addUserAuth = async (req, res) => {
-  const  {users,currentPage, totalPages, totalUsers, limit} = req.pagination;
-  const {fullName, email, password, mobile, zip, address} = req.body;
-  const hashedPass = await bcrypt.hash(password, 10)
+const blockUser = async (req, res) => {
      try {
-      const newUser =  new User({
-        fullName,
-        email,
-        password: hashedPass,
-        mobile,
-        zip,
-        address
-      })
-      await newUser.save();
-      // const ActiveUsers = await User.find()
-      // console.log('new user is created')
-      if(newUser){
+         const userId = req.params.id;
+         console.log(userId);
+
+         const user = await User.findById({_id : userId});
+         console.log(user);
+
+         if(user.isBlocked === 'false'){
+           const blockUser = await User.findByIdAndUpdate({_id : userId}, {$set : {isBlocked : true}});
+           if(blockUser){
+            console.log(`user ${user.fullName} is blocked`);
+            console.log(user);
+          }
+        }else{
+          const unBlockUser = await User.findByIdAndUpdate({_id : userId}, {$set : {isBlocked : false}});
+          console.log(`user ${user.fullName} is unblocked`)
+        }
+
+        const  {users,currentPage, totalPages, totalUsers, limit} = req.pagination;
+        // const users = await User.find
         return res.render('adminPages/manageUser/viewUsers', {
-          // ActiveUsers,
           users,
-          currentPage, 
+          currentPage,
           totalPages,
-          totalUsers, 
-          limit
-         })
-      }else{
-         res.render('adminPages/manageUser/addUser', {
-          error : 'user is not created'
-         })
-      }
-     } catch (error) {
-      console.error(error)
-     }
+          totalUsers,
+          limit,
+        });
+  
+
+     } catch (err) {
+      console.log('error : ', err);
+      return res.send({
+        msg : 'error occured while blocking the user'
+      })
+    }
+}
+
+// const addUserPage = (req, res) => {
+//   res.render('adminPages/manageUser/addUser', {
+//     error : null
+//   })
+// };
+
+// const addUserAuth = async (req, res) => {
+//   const  {users,currentPage, totalPages, totalUsers, limit} = req.pagination;
+//   const {fullName, email, password, mobile, zip, address} = req.body;
+//   const hashedPass = await bcrypt.hash(password, 10)
+//      try {
+//       const newUser =  new User({
+//         fullName,
+//         email,
+//         password: hashedPass,
+//         mobile,
+//         zip,
+//         address
+//       })
+//       await newUser.save();
+//       // const ActiveUsers = await User.find()
+//       // console.log('new user is created')
+//       if(newUser){
+//         return res.render('adminPages/manageUser/viewUsers', {
+//           // ActiveUsers,
+//           users,
+//           currentPage, 
+//           totalPages,
+//           totalUsers, 
+//           limit
+//          })
+//       }else{
+//          res.render('adminPages/manageUser/addUser', {
+//           error : 'user is not created'
+//          })
+//       }
+//      } catch (error) {
+//       console.error(error)
+//      }
+// };
+
+const searchUser = async (req, res) => {
+  try {
+
+    const searchQuery = req.body.searchQuery.toLowerCase();
+    console.log(searchQuery)
+    const results = await User.find({fullName : {$regex : searchQuery, $options : 'i'}});
+
+    console.log(results);
+    res.json(results);
+
+  } catch (err) {
+    console.log(err)
+  }
 }
 
 export {
@@ -154,7 +207,9 @@ export {
   manageUser,
   editUserPage,
   editUser,
-  addUserPage,
-  addUserAuth,
-  adminHomePage
+  // addUserPage,
+  // addUserAuth,
+  adminHomePage,
+  searchUser,
+  blockUser
 }

@@ -29,10 +29,15 @@
     color: #fff;
   }
 
-
-
-  .address p {
+  .change-add {
     word-wrap: break-word;
+    width: 100%;
+    height: auto;
+    outline: none;
+    margin-bottom: 10px;
+    text-transform: capitalize;
+    padding: 10px;
+    border-radius: 6px;
   }
 
   .btn-custom {
@@ -48,7 +53,7 @@
   }
 
   .product-img {
-    max-width: 100%;
+    max-width: 25%;
     height: auto;
     border-radius: 8px;
   }
@@ -71,85 +76,138 @@
   }
 </style>
 
-<h1 class="text-center mt-4">Checkout</h1>
+<h1 class="text-center mt-4 text-uppercase">Checkout</h1>
 
-<div class="accordion mt-5 container" id="accordionPanelsStayOpenExample">
-  <!-- Select Address Section -->
-  <div class="accordion-item">
-    <h2 class="accordion-header">
-      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
-        Select Address
+
+
+<div class="container mt-5">
+  <!-- Pagination Navigation -->
+  <ul class="nav nav-tabs justify-content-center" id="orderTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="delivery-tab" data-bs-toggle="tab" data-bs-target="#delivery" type="button" role="tab" aria-controls="delivery" aria-selected="true">
+        <i class="bi bi-truck"></i> Delivery Details
       </button>
-    </h2>
-    <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
-      <div class="accordion-body">
-        <div class="row justify-content-center align-items-center mt-3 g-4">
-          <div class="col-md-4 text-center">
-            <h4>Delivery Address</h4>
-          </div>
-          <div class="col-md-4 text-center">
-            <div class="address">
-              <% if (user) { %>
-                <p><%= user.address %></p>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab" aria-controls="payment" aria-selected="false">
+        <i class="bi bi-wallet"></i> Payment
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="product-tab" data-bs-toggle="tab" data-bs-target="#product" type="button" role="tab" aria-controls="product" aria-selected="false">
+        <i class="bi bi-bag"></i> Product Details
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content mt-4" id="orderTabContent">
+    <!-- Delivery Details -->
+    <div class="tab-pane fade show active" id="delivery" role="tabpanel" aria-labelledby="delivery-tab">
+      <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+          <h4 class="mb-4">Delivery Details</h4>
+          <div class="address">
+            
+            <% if (user) { %>
+              
+                <div class="mb-3">
+                  <h6>change the details if you want</h6>
+                  <label for="address" class="form-label">Address:</label>
+                  <input type="text" id="address" class="form-control" name="address" value="<%= user.address %>" >
+                </div>
+                <div class="mb-3">
+                  <label for="zip" class="form-label">Zip Code:</label>
+                  <input type="text" id="zip" class="form-control" name="zip" value="<%= user.zip %>" >
+                </div>
+                <div class="mb-3">
+                  <label for="mobile" class="form-label">Mobile:</label>
+                  <input type="text" id="mobile" class="form-control" name="mobile" value="<%= user.mobile %>" >
+                </div>
+                <div class="mb-3">
+                  <label for="fullName" class="form-label">Full Name:</label>
+                  <input type="text" id="fullName" class="form-control" name="fullName" value="<%= user.fullName %>" >
+                </div>
               <% } else { %>
-                <p>No address found. Please update your address.</p>
+                <p class="text-danger">No address found. Please update your address.</p>
+            
               <% } %>
-            </div>
-          </div>
-          <div class="col-md-4 text-center">
-            <button type="button" class="btn btn-custom">Change Address</button>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Select Payment Section -->
-  <div class="accordion-item">
-    <h2 class="accordion-header">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
-        Select Payment
-      </button>
-    </h2>
-    <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
-      <div class="accordion-body payment-methods">
-        <div class="row">
-          <div class="col-12">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay">
-              <label class="form-check-label" for="razorpay">Stripe</label>
-            </div>
+    <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+      <!-- Coupons Section -->
+      <div class="available-coupons p-3 mb-4 border rounded col-md-6 mx-auto">
+        <h5 class="text-primary mb-3">Available Coupons</h5>
+        <% if (coupons && coupons.length > 0) { %>
+          <div class="mb-3">
+            <select class="form-select" id="couponDropdown">
+              <option selected disabled>Choose a coupon</option>
+              <% coupons.forEach(ele => { %>
+                <option value="<%= ele.code %>">
+                  <%= ele.code %> - <%= ele.description %> (<%= ele.discount %>% Off)
+                </option>
+              <% }) %>
+            </select>
           </div>
-        </div>
-        <div class="row mt-2">
-          <div class="col-12">
+        <% } else { %>
+          <p class="text-muted">No coupons available at the moment.</p>
+        <% } %>
+      </div>
+    
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <!-- Coupon Input Section -->
+
+          <% if (coupons && coupons.length > 0) { %>           
+            <div class="coupon-section mb-4 p-3 border rounded">
+              <h5 class="text-primary mb-3">Apply Coupon code</h5>
+              <div class="input-group">
+                <input type="text" class="form-control" name="couponcode" id="couponCode" placeholder="Enter coupon code">
+                <button class="btn btn-primary" type="button" id="applyCouponBtn">Apply</button>
+              </div>
+            </div>
+          <% } %>
+    
+          <!-- Payment Methods -->
+          <h5 class="text-primary mb-3">Select Payment Method</h5>
+    
+          <!-- Stripe Option -->
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="radio" name="paymentMethod" id="stripe" value="stripe">
+            <label class="form-check-label" for="stripe">Stripe</label>
+          </div>
+          <button id="stripe-proceed-btn" class="btn btn-success w-100 mb-3" type="button">Proceed with Stripe</button>
+    
+          <!-- COD Option -->
+          <form action="/cod-order" method="POST">  
             <div class="form-check">
               <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod">
               <label class="form-check-label" for="cod">Cash on Delivery</label>
             </div>
-          </div>
+            <button id="purchase-btn" class="btn btn-success w-100 mt-3" type="submit">Proceed with COD</button>
+          </form>
         </div>
       </div>
     </div>
-  </div>
+    
+    
+    
 
-  <!-- Product Details Section -->
-  <div class="accordion-item">
-    <h2 class="accordion-header">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
-        Order Details
-      </button>
-    </h2>
-    <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
-      <div class="accordion-body">
+    <!-- Product Details -->
+    <div class="tab-pane fade mb-3" id="product" role="tabpanel" aria-labelledby="product-tab">
+      <div class="container">
+        <h4 class="mb-4 text-center">Product Details</h4>
         <% if (cart) { %>
           <% cart.forEach(item => { %>
-            <div class="row my-4 text-upperCase">
+            <div class="row my-4 align-items-center">
               <div class="col-md-4 text-center">
-                <img src="<%= item.products.images[0]?.url %>" alt="<%= item.products.name %>" class="product-img"/>
+                <img src="<%= item.products.images[0]?.url %>" alt="<%= item.products.name %>" class="img-fluid rounded shadow-sm">
               </div>
               <div class="col-md-8">
-                <h4><%= item.products.name %></h4>
+                <h5><%= item.products.name %></h5>
                 <p><strong>Price:</strong> $<%= item.price %></p>
                 <p><strong>Description:</strong> <%= item.products.description %></p>
                 <p><strong>Quantity:</strong> <%= item.quantity %></p>
@@ -158,17 +216,133 @@
             </div>
             <hr>
           <% }) %>
+          <div class="order-summary mt-4 d-flex align-items-center">
+            <h5><strong>Total Price:</strong> $<%= totalPrice %></h5>
+            <button type="button" class="btn btn-success ms-auto" id="purchase-btn">Proceed</button>
+          </div>
+        <% } else { %>
+          <p class="text-warning text-center">No products in the cart.</p>
         <% } %>
-        <div class="order-summary">
-          <h4><strong>Total Price:</strong> $<%= totalPrice %></h4>
-        </div>
       </div>
     </div>
   </div>
 </div>
 
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+   <script>
+
+$(document).ready(function() {
+    console.log('jQuery is working');
+    
+    // $('#stripe-proceed-btn').hide();
+    // $('#purchase-btn').hide();
+
+    
+    // $('#stripe, #cod').click(function() {
+    //     console.log('Payment method selected'); 
+    //     $('#stripe-proceed-btn').hide();
+    //     $('#purchase-btn').hide();
+
+    //     if ($('#stripe').is(':checked')) {
+    //         $('#stripe-proceed-btn').show();  
+    //     } else if ($('#cod').is(':checked')) {
+    //         $('#purchase-btn').show();  
+    //     }
+    // });
+
+    $('#stripe-proceed-btn').hide();
+$('#purchase-btn').hide();
+
+// Show or hide the buttons based on the selected payment method
+$('input[name="paymentMethod"]').change(function () {
+    const stripeChecked = $('#stripe').is(':checked');
+    const codChecked = $('#cod').is(':checked');
+
+    // Hide both buttons initially
+    $('#stripe-proceed-btn').hide();
+    $('#purchase-btn').hide();
+
+    // Show the respective button if the corresponding radio button is selected
+    if (stripeChecked) {
+        $('#stripe-proceed-btn').show();
+    } else if (codChecked) {
+        $('#purchase-btn').show();
+    }
+});
+
+$('input[name="paymentMethod"]').on('click', function () {
+    if ($(this).data('waschecked')) {
+        $(this).prop('checked', false).data('waschecked', false);
+    } else {
+        $('input[name="paymentMethod"]').data('waschecked', false); // Reset others
+        $(this).data('waschecked', true);
+    }
+});
+
+    const stripe = Stripe("<%= stripeKey %>");
+
+   $(document).ready(function() {
+  $('#stripe-proceed-btn').click(function() {
+    console.log("Button clicked");
+    
+    const seletedCoupon = $('#couponCode').val();
+    console.log(seletedCoupon)
+    // Assuming you're using fetch or Axios to send the request to create a session:
+    fetch('/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        couponCode : seletedCoupon
+      }),
+    })
+      .then((response) => response.json())
+      .then((session) => {
+        // Redirect to Stripe checkout
+        return stripe.redirectToCheckout({ sessionId: session.id });
+      })
+      .then((result) => {
+        if (result.error) {
+          // Display error to your customer (e.g., insufficient funds)
+          alert(result.error.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+
+  });
+});
+});
+
+document.getElementById('couponDropdown')?.addEventListener('change', function() {
+    const selectedCoupon = this.value;
+    if (selectedCoupon) {
+      document.getElementById('couponCode').value = selectedCoupon;
+    }
+  });
+
+  document.getElementById('applyCouponBtn')?.addEventListener('click', function() {
+    const couponCode = document.getElementById('couponCode').value;
+    if (couponCode) {
+      alert(`Coupon "${couponCode}" applied successfully!`);
+      // Add logic to validate and apply the coupon
+    } else {
+      alert('Please select or enter a valid coupon code.');
+    }
+  });
+
+  </script>
+
+
+
 </body>
 </html>

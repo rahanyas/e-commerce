@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <style>
+<style>
 .container {
     margin-top: 50px;
 }
@@ -27,7 +27,7 @@ h2 {
 }
 </style>
 
-  <!-- Navigation Bar -->
+<!-- Navigation Bar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light p-3">
     <div class="container-fluid">
       <h1 class="navbar-brand">users</h1>
@@ -45,17 +45,16 @@ h2 {
             <div class="col-md-6">
                 <form action="/admin/users/search" method="GET">
                     <div class="input-group">
-                        <input type="text" class="w-50" placeholder="Search by name or email..." name="searchQuery">
+                        <input type="text" class="w-50" id="search" placeholder="Search by name or email..." name="searchQuery">
                         <div class="input-group-append">
                             <button class="btn btn-primary" type="submit">Search</button>
                         </div>
                     </div>
                 </form>
             </div>
-            <div class="col-md-6 text-right">
-                <a href="/admin/users/add" class="btn btn-success">Add New User</a>
-            </div>
         </div>
+
+        <div id="search_result"></div>
 
         <!-- Users Table -->
         <div class="table-responsive">
@@ -79,8 +78,12 @@ h2 {
                         <td><%= user.isActive ? 'Active' : 'Inactive' %></td>
                         <td>
                             <a href="/admin/users/edit/<%= user._id %>" class="btn btn-warning btn-sm">Edit</a>
-                            <form action="/admin/users/delete/<%= user._id %>" method="POST" class="d-inline">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            <form action="/admin/users/delete/<%= user._id %>" method="post" class="d-inline">
+                                <% if (user.isBlocked === 'true') { %>
+                                    <button type="submit" class="btn btn-danger btn-sm">blocked</button>
+                                  <% } else { %>
+                                    <button type="submit" class="btn btn-danger btn-sm">block</button>
+                                  <% } %>
                             </form>
                         </td>
                     </tr>
@@ -109,5 +112,108 @@ h2 {
 
     <!-- Include Bootstrap JS (Optional) -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+    
+    let search_inp = document.getElementById('search');
+    let searchDis = document.getElementById('search_result');
+
+    const homeView = document.querySelector('.table-responsive');
+
+    search_inp.addEventListener('input', (event) => {
+         let val = event.target.value.trim();
+         console.log(val);
+
+         if(val.length > 0){
+            fetchResult(val);
+            homeView.style.display = 'none'
+         }else{
+            searchDis.innerHTML = '';
+            homeView.style.display = ''
+         }
+    });
+ 
+    const fetchResult = async (query) => {
+        try {
+            // console.log('inside the fetch');
+            let response = await fetch('/search', {
+                method : 'POST',
+                headers : {
+                    'Content-Type' : 'application/json'
+                },
+                body : JSON.stringify({searchQuery : query})
+            });
+            if(!response.ok) throw new Error ('error in fetchnig results');
+
+            let results = await response.json();
+            displayResults(results);
+
+        } catch (err) {
+            console.log(err)
+        }
+    };
+
+    const displayResults = (results) => {
+    // Clear previous results
+    searchDis.innerHTML = '';
+
+    // Handle no results
+    if (results.length === 0) {
+        let noResult = document.createElement('div');
+        noResult.textContent = 'No results found.';
+        searchDis.appendChild(noResult);
+        return;
+    }
+
+ 
+    // Create table elements
+    const tableContainer = document.createElement('div');
+    tableContainer.classList.add('table-responsive');
+
+    const table = document.createElement('table');
+    table.classList.add('table', 'table-striped', 'table-bordered');
+
+    const thead = document.createElement('thead');
+    thead.classList.add('thead-dark');
+    thead.innerHTML = `
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    `;
+
+    const tbody = document.createElement('tbody');
+
+    // Populate table rows
+    results.forEach((user, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${user.fullName}</td>
+            <td>${user.email}</td>
+            <td>${user.isActive ? 'Active' : 'Inactive'}</td>
+            <td>
+                <a href="/admin/users/edit/${user._id}" class="btn btn-warning btn-sm">Edit</a>
+                <form action="/admin/users/delete/${user._id}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Append the table parts
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    tableContainer.appendChild(table);
+
+    // Append the table to the results container
+    searchDis.appendChild(tableContainer);
+};
+
+    </script>
 </body>
 </html>

@@ -18,9 +18,24 @@ import { loginAuth,
          wishListPage,
          removeWishListproduct,
          orderPage,
+         stripePay,
          quantityChange,
          productSearch,
+         orderSuccess,
+         userInfoPage,
+         orderCancel,
+         cod_purchase,
+         getOrderDates,
+         getOrderDetailsByDate,
+         contactUs,
   } from "../controllers/userController/users.js";
+
+import { 
+       forgotPassPage, 
+       sendingOtp,
+       settingNewPass,
+       validateOtp
+    } from "../public/helpers/forgotPass.js";
 // import verifyUser from "../middlewares/login.js";
 
 router.get('/',homePage);
@@ -30,6 +45,7 @@ router.post('/loginAuth', loginAuth);
 router.get('/logout', logout);
 
 router.get('/contact', contactPage);
+router.post('/contactUs', contactUs);
 
 router.get('/product', productPage);
 router.get('/productDetail/:id', productDetailsPage);
@@ -44,9 +60,22 @@ router.get('/wishlistPage', wishListPage);
 router.post('/removeItem/:id', removeWishListproduct);
 
 router.get('/profile', myProfile);
+router.get('/userInfo', userInfoPage)
 router.post('/addAddress/:id', addAddress);
 
-router.get('/payment', orderPage)
+router.get('/ordersDate', getOrderDates);
+router.get('/viewDetails', getOrderDetailsByDate)
 
+router.get('/payment', orderPage);
+router.post('/create-checkout-session', stripePay);
+router.get('/success', orderSuccess);
+router.get('/cancel', orderCancel);
+router.post('/cod-order',cod_purchase);
+
+//for forgot pw
+router.get('/forgotPass', forgotPassPage);
+router.post('/Email', sendingOtp);
+router.post('/verifyOtp', validateOtp);
+router.post('/reset-password', settingNewPass);
 
 export default router;
