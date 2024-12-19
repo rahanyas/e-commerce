@@ -245,14 +245,22 @@ const addAddress = async (req, res) => {
 
 
 const productPage = async (req, res) => {
-  const user = req.session.user;
-  const products = await Products.find({}).populate('category');
-  res.render('userPages/product', {
-    user,
-    products,
-    error : null,
-    success : null
-    })
+  try {
+    
+    const user = req.session.user;
+    const products = await Products.find({}).populate('category');
+    res.render('userPages/product', {
+      user,
+      products,
+      error : null,
+      success : null
+      })
+
+  } catch (err) {
+    if(err){
+      return res.render('userPages/404Page')
+    }
+  }
 };
 
 const productDetailsPage = async (req, res) => {
@@ -441,10 +449,11 @@ const CartPage = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send({
-      success: false,
-      message: 'Error loading the cart page'
-    });
+    return res.render('userPages/404Page')
+    // res.status(500).send({
+    //   success: false,
+    //   message: 'Error loading the cart page'
+    // });
   }
 };
 
@@ -636,10 +645,11 @@ const wishListPage = async (req, res) => {
     // console.log(userDetail, userWishList, products)
   } catch (err) {
     console.error(err);
-    return res.status(500).send({
-      success : false,
-      message : 'an error occured in wishlist page'
-    })
+    return res.render('userPages/404Page')
+    // return res.status(500).send({
+    //   success : false,
+    //   message : 'an error occured in wishlist page'
+    // })
   }
 }
 
@@ -709,9 +719,10 @@ const orderPage = async (req, res) => {
     //  console.log( process.env.STRIPE_PUBLISHABLE_KEY)
   } catch (error) {
     console.log(error);
-    return res.status(500).send({
-      msg : 'an error occrured while getting the orderPage'
-    })
+    return res.render('userPages/404Page')
+    // return res.status(500).send({
+    //   msg : 'an error occrured while getting the orderPage'
+    // })
   }
 };
 
@@ -1243,9 +1254,12 @@ const getOrderDetailsByDate = async (req, res) => {
     }).populate('items.products');
     
     console.log(orderItemsInDate);
+    
+  
 
     res.render('userPages/allOrderView', {
-      orderItemsInDate
+      orderItemsInDate,
+      
     });
 
   } catch (err) {
@@ -1258,10 +1272,17 @@ const getOrderDetailsByDate = async (req, res) => {
 
 
 const contactPage = (req, res) => {
-   res.render('userPages/contact', {
-    error : null,
-    success : null,
-   });
+  try {
+    
+    res.render('userPages/contact', {
+     error : null,
+     success : null,
+    });
+  } catch (err) {
+    if(err){
+      return res.render('userPages/404Page')
+    }
+  }
 };
 
 const contactUs = async (req, res) => {

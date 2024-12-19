@@ -62,11 +62,11 @@
                     <p class="mb-1"><strong>Price:</strong> $<%= item.price %></p>
                     <p class="mb-1"><strong>Quantity:</strong> <%= item.quantity %></p>
                     <p class="mb-0">Status: <span class="badge bg-success"><%= order.status %></span></p>
-                    <p class="mb-0">Total Price: $<%= order.totalPrice %></p>
                     <p class="mb-1"><strong>Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
                     <h5 class="mb-1">Order ID: <%= order._id %></h5>
                   </div>
-                <% }) %>
+                  <% }) %>
+                  <h5 class="mb-2 text-center text-capitalize">total-price: $<%= order.totalPrice %></h5>
               </div>
             </div>
           </div>

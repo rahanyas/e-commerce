@@ -47,6 +47,6 @@ app.use('/', router);
 app.use('/', adminrouter);
 app.use('/', productRouter);
 
-app.listen(process.env.PORT || 9000, () => {
+app.listen(process.env.PORT || 9000, '0.0.0.0',() => {
   console.log(`server is running on port ${process.env.PORT || 9000}`)
 })

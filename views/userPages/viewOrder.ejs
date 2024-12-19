@@ -42,6 +42,7 @@
         <% orderDates.forEach(orderDate => { %>
           <div class="col-md-4">
             <div class="order-card">
+              <!-- new Date(order.orderDate).toLocaleDateString() -->
               <h5 class="mb-3">Order Date: <%= new Date(orderDate).toLocaleDateString() %></h5>
               <a href="/viewDetails/?orderDate=<%= encodeURIComponent(orderDate) %>" class="btn btn-primary view-details-btn">View Details</a>
             </div>
