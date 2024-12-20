@@ -416,6 +416,51 @@ const addToCartAuth = async (req, res) => {
 //   }
 // }
 
+// const CartPage = async (req, res) => {
+//   try {
+//     const user = req.session.user;
+//     if (!user) {
+//       return res.render('userPages/login-page', {
+//         success: null,
+//         error: 'Please login to see your cart'
+//       });
+//     }
+
+//     const userDetail = await User.findById(user._id);
+//     const cart = await Cart.findOne({ user: userDetail._id }).populate('items.products').exec();
+
+//     console.log(userDetail)
+
+//     if (!cart || !cart.items || cart.items.length === 0) {
+//       const products = await Products.find({}).populate('category');
+//       return res.render('userPages/product', {
+//         user,
+//         products,
+//         error: 'You have not added any products to your cart',
+//         success: null
+//       });
+//     }else{
+//       console.log(cart)
+//       console.log(cart.totalPrice)
+  
+//       console.log(cart.items)
+  
+//       return res.render('userPages/shoping-cart', {
+//         products: cart.items,
+//         totalPrice: cart.totalPrice,  // Pass total price
+//         cart
+//       });
+//     }
+//   } catch (err) {
+//     console.error(err);
+//     return res.render('userPages/404Page')
+//     // res.status(500).send({
+//     //   success: false,
+//     //   message: 'Error loading the cart page'
+//     // });
+//   }
+// };
+
 const CartPage = async (req, res) => {
   try {
     const user = req.session.user;
@@ -427,7 +472,10 @@ const CartPage = async (req, res) => {
     }
 
     const userDetail = await User.findById(user._id);
-    const cart = await Cart.findOne({ user: userDetail._id }).populate('items.products');
+    // const cart = await Cart.findOne({ user: userDetail._id }).populate('items.products').exec();
+   const cart = await Cart.findOne({user : userDetail._id}).populate('items.products')
+
+    console.log(userDetail);
 
     if (!cart || !cart.items || cart.items.length === 0) {
       const products = await Products.find({}).populate('category');
@@ -437,25 +485,24 @@ const CartPage = async (req, res) => {
         error: 'You have not added any products to your cart',
         success: null
       });
-    };
-    console.log(cart.totalPrice)
+    } else {
+      console.log(cart);
+      console.log(cart.totalPrice);
+      console.log(cart.items);
 
-      console.log(cart.items.products)
-
-    return res.render('userPages/shoping-cart', {
-      products: cart.items,
-      totalPrice: cart.totalPrice,  // Pass total price
-      cart
-    });
+ 
+      return res.render('userPages/shoping-cart', {
+        products: cart.items,    // Pass only valid items
+        totalPrice: cart.totalPrice,
+        cart
+      });
+    }
   } catch (err) {
     console.error(err);
-    return res.render('userPages/404Page')
-    // res.status(500).send({
-    //   success: false,
-    //   message: 'Error loading the cart page'
-    // });
+    return res.render('userPages/404Page');
   }
 };
+
 
 const quantityChange = async (req, res) => {
   const { productId, quantity } = req.body;

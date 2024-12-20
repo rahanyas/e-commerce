@@ -43,34 +43,35 @@
 	
 								<% if (products.length > 0 && cart) { %>
 									<% products.forEach(item => { %>
-										<tr class="table_row">
-											<td class="column-1">
-												<div class="how-itemcart1">
-													
-													  <img src="<%= item.products.images[0]?.url %>" alt="<%= item.products.name %>" class="img">
-											
-													<a href="/deleteCartItem/<%= item.products._id %>" class="fa fa-solid fa-trash"></a>
-												</div>
-											</td>
-											<td class="column-2 text-uppercase"><%= item.products.name %></td>
-											<td class="column-3">$<%= item.products.price %></td>
-											<td class="column-4">
-												<div class="wrap-num-product flex-w m-l-auto m-r-0">
-													<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m minus-btn" data-product-id="<%= item.products._id %>">
-														<i class="fs-16 zmdi zmdi-minus"></i>
-													</div>
-	
-													<input class="mtext-104 cl3 txt-center num-product" type="number" name="quantity" value="<%= item.quantity %>" id="quantity-<%= item.products._id %>" required>
-	
-													<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m plus-btn" data-product-id="<%= item.products._id %>">
-														<i class="fs-16 zmdi zmdi-plus"></i>
-													</div>
-												</div>
-											</td>
-											<td class="column-5" id="subtotal-<%= item.products._id %>">$<%= item.subTotal.toFixed(2) %></td>
-										</tr>
+											<tr class="table_row">
+													<td class="column-1">
+															<div class="how-itemcart1">
+																	<% if (item.products && item.products.images && item.products.images.length > 0) { %>
+																			<img src="<%= item.products.images[0]?.url %>" alt="<%= item.products.name %>" class="img">
+																	<% } else { %>
+																			<p>no image found</p>
+																	<% } %>
+																	<a href="/deleteCartItem/<%= item.products._id %>" class="fa fa-solid fa-trash"></a>
+															</div>
+													</td>
+													<td class="column-2 text-uppercase"><%= item.products.name %></td>
+													<td class="column-3">$<%= item.products.price %></td>
+													<td class="column-4">
+															<div class="wrap-num-product flex-w m-l-auto m-r-0">
+																	<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m minus-btn" data-product-id="<%= item.products._id %>">
+																			<i class="fs-16 zmdi zmdi-minus"></i>
+																	</div>
+																	<input class="mtext-104 cl3 txt-center num-product" type="number" name="quantity" value="<%= item.quantity %>" id="quantity-<%= item.products._id %>" required>
+																	<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m plus-btn" data-product-id="<%= item.products._id %>">
+																			<i class="fs-16 zmdi zmdi-plus"></i>
+																	</div>
+															</div>
+													</td>
+													<td class="column-5" id="subtotal-<%= item.products._id %>">$<%= item.subTotal.toFixed(2) %></td>
+											</tr>
 									<% }) %>
-								<% } %>
+							<% } %>
+							
 							</table>
 						</div>
 					</div>
