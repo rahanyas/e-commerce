@@ -825,13 +825,15 @@ const stripePay = async (req, res) => {
         //   throw new Error('invalid domain')
         // }
         //  console.log(process.env.DOMAIN);
+
+        const  redirectUrl  = `${process.env.NODE_ENV} === 'DEV' ? ${process.env.DEV_DOMAIN} : ${process.env.PROD_DOMAIN}`
          
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ['card'],
           line_items: lineItems,
           mode: 'payment',
-          success_url: `${process.env.DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}&code=${couponCode}`,
-          cancel_url: `${process.env.DOMAIN}/cancel`,
+          success_url: `${redirectUrl}/success?session_id={CHECKOUT_SESSION_ID}&code=${couponCode}`,
+          cancel_url: `${redirectUrl}/cancel`,
         });
         
 

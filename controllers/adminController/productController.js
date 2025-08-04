@@ -2,7 +2,7 @@ import cloudinary from 'cloudinary';
 import getDataUri  from "../../utils/features.js";
 import Products from "../../models/productSchema.js"
 import categoryModel from '../../models/categorySchema.js';
-;
+
 
 
 export const getAllProducts = async (req, res) => {
